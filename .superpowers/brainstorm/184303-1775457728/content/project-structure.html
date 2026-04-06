@@ -1,0 +1,165 @@
+<h2>Galeriku — Feature-Based Project Structure</h2>
+<p class="subtitle">Organized by domain/feature, following SOLID principles</p>
+
+<div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+  <!-- Left: Folder structure -->
+  <div class="mockup" style="flex: 1; min-width: 340px;">
+    <div class="mockup-header">Folder Structure</div>
+    <div class="mockup-body" style="padding: 16px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 2;">
+      <div style="color: #64748b;">galeriku/</div>
+      <div style="color: #64748b;">├── src/</div>
+
+      <!-- App Router -->
+      <div style="margin-left: 20px;">
+        <div style="color: #60a5fa;">├── app/ <span style="color: #64748b; font-size: 11px;">← routing only, thin layer</span></div>
+        <div style="margin-left: 20px; color: #94a3b8;">
+          <div>├── (auth)/</div>
+          <div style="margin-left: 20px;">├── login/page.tsx</div>
+          <div style="margin-left: 20px;">├── register/page.tsx</div>
+          <div>├── (main)/</div>
+          <div style="margin-left: 20px;">├── albums/page.tsx</div>
+          <div style="margin-left: 20px;">├── albums/[id]/page.tsx</div>
+          <div style="margin-left: 20px;">├── media/[id]/page.tsx</div>
+          <div style="margin-left: 20px;">├── search/page.tsx</div>
+          <div style="margin-left: 20px;">├── favorites/page.tsx</div>
+          <div>├── api/ <span style="color: #64748b; font-size: 11px;">← API routes delegate to features</span></div>
+          <div style="margin-left: 20px;">├── auth/[...all]/route.ts</div>
+          <div style="margin-left: 20px;">├── upload/presign/route.ts</div>
+          <div>├── layout.tsx</div>
+          <div>├── middleware.ts <span style="color: #64748b; font-size: 11px;">← auth guard</span></div>
+        </div>
+      </div>
+
+      <!-- Features -->
+      <div style="margin-left: 20px;">
+        <div style="color: #a78bfa;">├── features/ <span style="color: #64748b; font-size: 11px;">← domain logic lives here</span></div>
+        <div style="margin-left: 20px; color: #94a3b8;">
+
+          <div style="color: #4ade80;">├── auth/</div>
+          <div style="margin-left: 20px;">├── components/ <span style="color: #64748b; font-size: 11px;">(LoginForm, RegisterForm)</span></div>
+          <div style="margin-left: 20px;">├── actions/ <span style="color: #64748b; font-size: 11px;">(server actions)</span></div>
+          <div style="margin-left: 20px;">├── hooks/ <span style="color: #64748b; font-size: 11px;">(useSession)</span></div>
+          <div style="margin-left: 20px;">├── lib/ <span style="color: #64748b; font-size: 11px;">(auth config, client)</span></div>
+          <div style="margin-left: 20px;">├── types.ts</div>
+
+          <div style="color: #4ade80;">├── album/</div>
+          <div style="margin-left: 20px;">├── components/ <span style="color: #64748b; font-size: 11px;">(AlbumGrid, AlbumCard, AlbumForm)</span></div>
+          <div style="margin-left: 20px;">├── actions/ <span style="color: #64748b; font-size: 11px;">(createAlbum, deleteAlbum, inviteMember)</span></div>
+          <div style="margin-left: 20px;">├── hooks/ <span style="color: #64748b; font-size: 11px;">(useAlbums, useAlbumMembers)</span></div>
+          <div style="margin-left: 20px;">├── services/ <span style="color: #64748b; font-size: 11px;">(album.service.ts — DB queries)</span></div>
+          <div style="margin-left: 20px;">├── types.ts</div>
+
+          <div style="color: #4ade80;">├── media/</div>
+          <div style="margin-left: 20px;">├── components/ <span style="color: #64748b; font-size: 11px;">(MediaGrid, MediaViewer, VideoPlayer, Uploader)</span></div>
+          <div style="margin-left: 20px;">├── actions/ <span style="color: #64748b; font-size: 11px;">(uploadMedia, deleteMedia)</span></div>
+          <div style="margin-left: 20px;">├── hooks/ <span style="color: #64748b; font-size: 11px;">(useMediaUpload, usePresignedUrl)</span></div>
+          <div style="margin-left: 20px;">├── services/ <span style="color: #64748b; font-size: 11px;">(media.service.ts, thumbnail.ts)</span></div>
+          <div style="margin-left: 20px;">├── types.ts</div>
+
+          <div style="color: #4ade80;">├── comment/</div>
+          <div style="margin-left: 20px;">├── components/ <span style="color: #64748b; font-size: 11px;">(CommentList, CommentForm)</span></div>
+          <div style="margin-left: 20px;">├── actions/</div>
+          <div style="margin-left: 20px;">├── services/</div>
+
+          <div style="color: #4ade80;">├── favorite/</div>
+          <div style="margin-left: 20px;">├── components/ <span style="color: #64748b; font-size: 11px;">(FavoriteButton, FavoriteGrid)</span></div>
+          <div style="margin-left: 20px;">├── actions/</div>
+
+          <div style="color: #4ade80;">├── tag/</div>
+          <div style="margin-left: 20px;">├── components/ <span style="color: #64748b; font-size: 11px;">(TagInput, TagBadge)</span></div>
+          <div style="margin-left: 20px;">├── actions/</div>
+
+          <div style="color: #4ade80;">├── search/</div>
+          <div style="margin-left: 20px;">├── components/ <span style="color: #64748b; font-size: 11px;">(SearchBar, SearchResults)</span></div>
+          <div style="margin-left: 20px;">├── actions/</div>
+          <div style="margin-left: 20px;">├── services/ <span style="color: #64748b; font-size: 11px;">(full-text search queries)</span></div>
+        </div>
+      </div>
+
+      <!-- Shared -->
+      <div style="margin-left: 20px;">
+        <div style="color: #fb923c;">├── shared/ <span style="color: #64748b; font-size: 11px;">← cross-cutting concerns</span></div>
+        <div style="margin-left: 20px; color: #94a3b8;">
+          <div>├── components/ <span style="color: #64748b; font-size: 11px;">(Button, Modal, Avatar, Layout)</span></div>
+          <div>├── hooks/ <span style="color: #64748b; font-size: 11px;">(useDebounce, useInfiniteScroll)</span></div>
+          <div>├── lib/ <span style="color: #64748b; font-size: 11px;">(r2-client.ts, validators.ts, errors.ts)</span></div>
+          <div>├── types/ <span style="color: #64748b; font-size: 11px;">(global types, API response types)</span></div>
+        </div>
+      </div>
+
+      <!-- DB -->
+      <div style="margin-left: 20px;">
+        <div style="color: #f472b6;">├── db/ <span style="color: #64748b; font-size: 11px;">← database layer</span></div>
+        <div style="margin-left: 20px; color: #94a3b8;">
+          <div>├── schema/ <span style="color: #64748b; font-size: 11px;">(per-table schema files)</span></div>
+          <div>├── migrations/</div>
+          <div>├── index.ts <span style="color: #64748b; font-size: 11px;">(db client export)</span></div>
+        </div>
+      </div>
+
+      <!-- Root configs -->
+      <div style="color: #64748b; margin-top: 8px;">
+        <div>├── drizzle.config.ts</div>
+        <div>├── next.config.ts</div>
+        <div>├── tailwind.config.ts</div>
+        <div>├── package.json</div>
+        <div>└── .env.local</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: SOLID mapping -->
+  <div style="flex: 0 0 320px; display: flex; flex-direction: column; gap: 12px;">
+    <h3>SOLID Principles Applied</h3>
+
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #60a5fa;">
+      <div style="color: #60a5fa; font-weight: bold; font-size: 13px;">S — Single Responsibility</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">
+        Setiap feature folder punya satu domain.<br>
+        <code>actions/</code> → mutasi data<br>
+        <code>services/</code> → query & business logic<br>
+        <code>components/</code> → UI rendering
+      </div>
+    </div>
+
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #a78bfa;">
+      <div style="color: #a78bfa; font-weight: bold; font-size: 13px;">O — Open/Closed</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">
+        Feature baru (misal: "story" atau "shared link") cukup tambah folder baru di <code>features/</code> tanpa mengubah feature lain.
+      </div>
+    </div>
+
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #4ade80;">
+      <div style="color: #4ade80; font-weight: bold; font-size: 13px;">L — Liskov Substitution</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">
+        Media types (photo/video) share interface <code>Media</code>, bisa diproses polymorphically di MediaGrid, MediaViewer.
+      </div>
+    </div>
+
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #fb923c;">
+      <div style="color: #fb923c; font-weight: bold; font-size: 13px;">I — Interface Segregation</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">
+        Types kecil & spesifik per feature. <code>AlbumWithMembers</code>, <code>MediaWithTags</code> — tidak satu "god type" untuk semua.
+      </div>
+    </div>
+
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #f472b6;">
+      <div style="color: #f472b6; font-weight: bold; font-size: 13px;">D — Dependency Inversion</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">
+        Features depend on abstractions di <code>shared/lib/</code> (R2 client, validators). DB client di-inject dari <code>db/index.ts</code>, bukan hard-coded per file.
+      </div>
+    </div>
+
+    <div style="background: #0f172a; border-radius: 8px; padding: 16px; margin-top: 8px;">
+      <div style="color: #e2e8f0; font-weight: bold; font-size: 13px;">Import Rules</div>
+      <div style="color: #94a3b8; font-size: 12px; margin-top: 6px; line-height: 1.8;">
+        ✅ <code>app/</code> → imports from <code>features/</code><br>
+        ✅ <code>features/</code> → imports from <code>shared/</code>, <code>db/</code><br>
+        ✅ <code>features/</code> → imports from other <code>features/</code> (via public API)<br>
+        ❌ <code>shared/</code> → NEVER imports from <code>features/</code><br>
+        ❌ <code>db/</code> → NEVER imports from <code>features/</code>
+      </div>
+    </div>
+  </div>
+</div>

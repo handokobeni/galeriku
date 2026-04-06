@@ -1,0 +1,518 @@
+<h2>Galeriku — Admin Dashboard</h2>
+<p class="subtitle">Owner-only, dedicated /admin routes, Network First caching</p>
+
+<!-- Page Map -->
+<div class="mockup" style="margin-bottom: 20px;">
+  <div class="mockup-header">Admin Pages</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+      <div style="background: #0f172a; border-radius: 8px; padding: 12px; width: 140px; text-align: center; border: 2px solid #ef4444;">
+        <div style="color: #ef4444; font-size: 11px;">Owner only</div>
+        <div style="color: #ef4444; font-weight: bold; font-size: 12px; margin-top: 4px;">/admin</div>
+        <div style="color: #64748b; font-size: 10px;">Overview / Stats</div>
+      </div>
+      <div style="background: #0f172a; border-radius: 8px; padding: 12px; width: 140px; text-align: center; border: 2px solid #ef4444;">
+        <div style="color: #ef4444; font-size: 11px;">Owner only</div>
+        <div style="color: #ef4444; font-weight: bold; font-size: 12px; margin-top: 4px;">/admin/users</div>
+        <div style="color: #64748b; font-size: 10px;">User management</div>
+      </div>
+      <div style="background: #0f172a; border-radius: 8px; padding: 12px; width: 140px; text-align: center; border: 2px solid #ef4444;">
+        <div style="color: #ef4444; font-size: 11px;">Owner only</div>
+        <div style="color: #ef4444; font-weight: bold; font-size: 12px; margin-top: 4px;">/admin/albums</div>
+        <div style="color: #64748b; font-size: 10px;">Album overview</div>
+      </div>
+      <div style="background: #0f172a; border-radius: 8px; padding: 12px; width: 140px; text-align: center; border: 2px solid #ef4444;">
+        <div style="color: #ef4444; font-size: 11px;">Owner only</div>
+        <div style="color: #ef4444; font-weight: bold; font-size: 12px; margin-top: 4px;">/admin/storage</div>
+        <div style="color: #64748b; font-size: 10px;">Storage stats</div>
+      </div>
+      <div style="background: #0f172a; border-radius: 8px; padding: 12px; width: 140px; text-align: center; border: 2px solid #ef4444;">
+        <div style="color: #ef4444; font-size: 11px;">Owner only</div>
+        <div style="color: #ef4444; font-weight: bold; font-size: 12px; margin-top: 4px;">/admin/activity</div>
+        <div style="color: #64748b; font-size: 10px;">Activity log</div>
+      </div>
+      <div style="background: #0f172a; border-radius: 8px; padding: 12px; width: 140px; text-align: center; border: 2px solid #ef4444;">
+        <div style="color: #ef4444; font-size: 11px;">Owner only</div>
+        <div style="color: #ef4444; font-weight: bold; font-size: 12px; margin-top: 4px;">/admin/settings</div>
+        <div style="color: #64748b; font-size: 10px;">App settings</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Mockups -->
+<div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
+
+  <!-- Mobile: Admin Overview -->
+  <div style="width: 280px;">
+    <div class="mockup">
+      <div class="mockup-header">Mobile — /admin (Overview)</div>
+      <div class="mockup-body" style="padding: 0; min-height: 520px; display: flex; flex-direction: column; max-width: 280px;">
+
+        <div style="display: flex; justify-content: space-between; padding: 4px 12px; font-size: 10px; color: #64748b; background: #0f172a;">
+          <span>9:41</span>
+          <span>📶 🔋</span>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #0f172a; border-bottom: 1px solid #1e293b;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="color: #64748b; font-size: 16px;">←</span>
+            <span style="color: #e2e8f0; font-weight: bold; font-size: 15px;">Admin</span>
+          </div>
+          <div style="background: #ef444420; color: #ef4444; padding: 2px 8px; border-radius: 4px; font-size: 10px;">OWNER</div>
+        </div>
+
+        <div style="flex: 1; padding: 16px; overflow: auto;">
+          <!-- Stats Cards -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+            <div style="background: #1e293b; border-radius: 8px; padding: 12px;">
+              <div style="color: #64748b; font-size: 10px;">Total Users</div>
+              <div style="color: #e2e8f0; font-size: 22px; font-weight: bold;">7</div>
+              <div style="color: #4ade80; font-size: 10px;">+2 this month</div>
+            </div>
+            <div style="background: #1e293b; border-radius: 8px; padding: 12px;">
+              <div style="color: #64748b; font-size: 10px;">Total Albums</div>
+              <div style="color: #e2e8f0; font-size: 22px; font-weight: bold;">12</div>
+              <div style="color: #4ade80; font-size: 10px;">+3 this month</div>
+            </div>
+            <div style="background: #1e293b; border-radius: 8px; padding: 12px;">
+              <div style="color: #64748b; font-size: 10px;">Total Media</div>
+              <div style="color: #e2e8f0; font-size: 22px; font-weight: bold;">847</div>
+              <div style="color: #94a3b8; font-size: 10px;">792 foto • 55 video</div>
+            </div>
+            <div style="background: #1e293b; border-radius: 8px; padding: 12px;">
+              <div style="color: #64748b; font-size: 10px;">Storage Used</div>
+              <div style="color: #e2e8f0; font-size: 22px; font-weight: bold;">4.2 GB</div>
+              <div style="color: #4ade80; font-size: 10px;">42% of 10GB free</div>
+            </div>
+          </div>
+
+          <!-- Storage Bar -->
+          <div style="background: #1e293b; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="color: #94a3b8; font-size: 11px;">R2 Storage</span>
+              <span style="color: #94a3b8; font-size: 11px;">4.2 / 10 GB</span>
+            </div>
+            <div style="background: #0f172a; border-radius: 4px; height: 8px; overflow: hidden;">
+              <div style="background: linear-gradient(90deg, #4ade80, #22d3ee); width: 42%; height: 100%; border-radius: 4px;"></div>
+            </div>
+          </div>
+
+          <!-- Quick Menu -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="background: #1e293b; border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 16px;">👥</span>
+                <div>
+                  <div style="color: #e2e8f0; font-size: 13px; font-weight: bold;">Users</div>
+                  <div style="color: #64748b; font-size: 10px;">7 registered, 5 active</div>
+                </div>
+              </div>
+              <span style="color: #64748b;">→</span>
+            </div>
+            <div style="background: #1e293b; border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 16px;">📁</span>
+                <div>
+                  <div style="color: #e2e8f0; font-size: 13px; font-weight: bold;">Albums</div>
+                  <div style="color: #64748b; font-size: 10px;">12 albums, 847 items</div>
+                </div>
+              </div>
+              <span style="color: #64748b;">→</span>
+            </div>
+            <div style="background: #1e293b; border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 16px;">💾</span>
+                <div>
+                  <div style="color: #e2e8f0; font-size: 13px; font-weight: bold;">Storage</div>
+                  <div style="color: #64748b; font-size: 10px;">4.2 GB used of 10 GB</div>
+                </div>
+              </div>
+              <span style="color: #64748b;">→</span>
+            </div>
+            <div style="background: #1e293b; border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 16px;">📋</span>
+                <div>
+                  <div style="color: #e2e8f0; font-size: 13px; font-weight: bold;">Activity</div>
+                  <div style="color: #64748b; font-size: 10px;">23 events today</div>
+                </div>
+              </div>
+              <span style="color: #64748b;">→</span>
+            </div>
+            <div style="background: #1e293b; border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 16px;">⚙️</span>
+                <div>
+                  <div style="color: #e2e8f0; font-size: 13px; font-weight: bold;">Settings</div>
+                  <div style="color: #64748b; font-size: 10px;">App configuration</div>
+                </div>
+              </div>
+              <span style="color: #64748b;">→</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile: User Management -->
+  <div style="width: 280px;">
+    <div class="mockup">
+      <div class="mockup-header">Mobile — /admin/users</div>
+      <div class="mockup-body" style="padding: 0; min-height: 520px; display: flex; flex-direction: column; max-width: 280px;">
+
+        <div style="display: flex; justify-content: space-between; padding: 4px 12px; font-size: 10px; color: #64748b; background: #0f172a;">
+          <span>9:41</span>
+          <span>📶 🔋</span>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #0f172a; border-bottom: 1px solid #1e293b;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="color: #64748b; font-size: 16px;">←</span>
+            <span style="color: #e2e8f0; font-weight: bold; font-size: 15px;">Users</span>
+          </div>
+          <div style="background: #3b82f6; color: white; padding: 6px 12px; border-radius: 6px; font-size: 11px;">+ Invite</div>
+        </div>
+
+        <div style="flex: 1; padding: 12px; overflow: auto;">
+          <!-- User Cards -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 50%; background: #3b82f6; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">BH</div>
+                  <div>
+                    <div style="color: #e2e8f0; font-size: 13px; font-weight: bold;">Beni Handoko</div>
+                    <div style="color: #64748b; font-size: 10px;">beni@email.com</div>
+                  </div>
+                </div>
+                <div style="background: #ef444420; color: #ef4444; padding: 2px 8px; border-radius: 4px; font-size: 10px;">owner</div>
+              </div>
+              <div style="display: flex; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #0f172a; color: #64748b; font-size: 10px;">
+                <span>12 albums</span>
+                <span>423 uploads</span>
+                <span>Last active: now</span>
+              </div>
+            </div>
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 50%; background: #10b981; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">MA</div>
+                  <div>
+                    <div style="color: #e2e8f0; font-size: 13px; font-weight: bold;">Mama</div>
+                    <div style="color: #64748b; font-size: 10px;">mama@email.com</div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <div style="background: #4ade8020; color: #4ade80; padding: 2px 8px; border-radius: 4px; font-size: 10px;">active</div>
+                  <span style="color: #64748b; font-size: 14px;">⋮</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #0f172a; color: #64748b; font-size: 10px;">
+                <span>5 albums</span>
+                <span>156 uploads</span>
+                <span>Last: 2hr ago</span>
+              </div>
+            </div>
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 50%; background: #f97316; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">AD</div>
+                  <div>
+                    <div style="color: #e2e8f0; font-size: 13px; font-weight: bold;">Adi</div>
+                    <div style="color: #64748b; font-size: 10px;">adi@email.com</div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <div style="background: #4ade8020; color: #4ade80; padding: 2px 8px; border-radius: 4px; font-size: 10px;">active</div>
+                  <span style="color: #64748b; font-size: 14px;">⋮</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #0f172a; color: #64748b; font-size: 10px;">
+                <span>3 albums</span>
+                <span>89 uploads</span>
+                <span>Last: 1d ago</span>
+              </div>
+            </div>
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="width: 36px; height: 36px; border-radius: 50%; background: #64748b; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">SR</div>
+                  <div>
+                    <div style="color: #94a3b8; font-size: 13px; font-weight: bold;">Sarah</div>
+                    <div style="color: #64748b; font-size: 10px;">sarah@email.com</div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <div style="background: #ef444420; color: #ef4444; padding: 2px 8px; border-radius: 4px; font-size: 10px;">inactive</div>
+                  <span style="color: #64748b; font-size: 14px;">⋮</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #0f172a; color: #64748b; font-size: 10px;">
+                <span>1 album</span>
+                <span>12 uploads</span>
+                <span>Last: 30d ago</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Actions (context menu) -->
+          <div style="margin-top: 16px; background: #0f172a; border-radius: 8px; padding: 12px;">
+            <div style="color: #94a3b8; font-weight: bold; font-size: 11px; margin-bottom: 8px;">User Actions (⋮ menu)</div>
+            <div style="color: #94a3b8; font-size: 11px; line-height: 2;">
+              • Reset password → generate temporary password<br>
+              • Deactivate → revoke access, keep data<br>
+              • Reactivate → restore access<br>
+              • Delete → remove user + reassign media to owner
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile: Activity Log -->
+  <div style="width: 280px;">
+    <div class="mockup">
+      <div class="mockup-header">Mobile — /admin/activity</div>
+      <div class="mockup-body" style="padding: 0; min-height: 520px; display: flex; flex-direction: column; max-width: 280px;">
+
+        <div style="display: flex; justify-content: space-between; padding: 4px 12px; font-size: 10px; color: #64748b; background: #0f172a;">
+          <span>9:41</span>
+          <span>📶 🔋</span>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #0f172a; border-bottom: 1px solid #1e293b;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="color: #64748b; font-size: 16px;">←</span>
+            <span style="color: #e2e8f0; font-weight: bold; font-size: 15px;">Activity</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <div style="background: #1e293b; color: #94a3b8; padding: 4px 8px; border-radius: 6px; font-size: 10px;">All</div>
+            <div style="background: #1e293b; color: #94a3b8; padding: 4px 8px; border-radius: 6px; font-size: 10px;">Filter ▾</div>
+          </div>
+        </div>
+
+        <div style="flex: 1; padding: 12px; overflow: auto;">
+
+          <div style="color: #64748b; font-size: 10px; font-weight: bold; margin-bottom: 8px;">Today</div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="background: #1e293b; border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: flex-start;">
+              <div style="color: #4ade80; font-size: 14px; margin-top: 2px;">📤</div>
+              <div style="flex: 1;">
+                <div style="color: #e2e8f0; font-size: 11px;"><strong>Mama</strong> uploaded 12 photos</div>
+                <div style="color: #64748b; font-size: 10px;">Liburan Bali • 2 min ago</div>
+              </div>
+            </div>
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: flex-start;">
+              <div style="color: #60a5fa; font-size: 14px; margin-top: 2px;">💬</div>
+              <div style="flex: 1;">
+                <div style="color: #e2e8f0; font-size: 11px;"><strong>Adi</strong> commented on IMG_2847.jpg</div>
+                <div style="color: #64748b; font-size: 10px;">Liburan Bali • 15 min ago</div>
+              </div>
+            </div>
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: flex-start;">
+              <div style="color: #a78bfa; font-size: 14px; margin-top: 2px;">🔑</div>
+              <div style="flex: 1;">
+                <div style="color: #e2e8f0; font-size: 11px;"><strong>Beni</strong> logged in</div>
+                <div style="color: #64748b; font-size: 10px;">Chrome, Windows • 1 hr ago</div>
+              </div>
+            </div>
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: flex-start;">
+              <div style="color: #fb923c; font-size: 14px; margin-top: 2px;">📁</div>
+              <div style="flex: 1;">
+                <div style="color: #e2e8f0; font-size: 11px;"><strong>Beni</strong> created album "Wisuda Adi"</div>
+                <div style="color: #64748b; font-size: 10px;">3 hr ago</div>
+              </div>
+            </div>
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: flex-start;">
+              <div style="color: #4ade80; font-size: 14px; margin-top: 2px;">👥</div>
+              <div style="flex: 1;">
+                <div style="color: #e2e8f0; font-size: 11px;"><strong>Beni</strong> invited Mama to "Wisuda Adi"</div>
+                <div style="color: #64748b; font-size: 10px;">3 hr ago</div>
+              </div>
+            </div>
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: flex-start;">
+              <div style="color: #ef4444; font-size: 14px; margin-top: 2px;">⚠️</div>
+              <div style="flex: 1;">
+                <div style="color: #ef4444; font-size: 11px;"><strong>Unknown</strong> failed login attempt</div>
+                <div style="color: #64748b; font-size: 10px;">test@email.com • 5 hr ago</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="color: #64748b; font-size: 10px; font-weight: bold; margin: 12px 0 8px;">Yesterday</div>
+
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="background: #1e293b; border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: flex-start;">
+              <div style="color: #4ade80; font-size: 14px; margin-top: 2px;">📤</div>
+              <div style="flex: 1;">
+                <div style="color: #e2e8f0; font-size: 11px;"><strong>Adi</strong> uploaded 3 videos</div>
+                <div style="color: #64748b; font-size: 10px;">Reuni SMA • yesterday</div>
+              </div>
+            </div>
+
+            <div style="background: #1e293b; border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: flex-start;">
+              <div style="color: #f472b6; font-size: 14px; margin-top: 2px;">🗑️</div>
+              <div style="flex: 1;">
+                <div style="color: #e2e8f0; font-size: 11px;"><strong>Beni</strong> deleted 2 photos</div>
+                <div style="color: #64748b; font-size: 10px;">Keluarga • yesterday</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Data Model Addition -->
+<div class="mockup" style="margin-bottom: 20px;">
+  <div class="mockup-header">New Table — ActivityLog</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+
+      <div style="border: 2px solid #fb923c; border-radius: 10px; width: 240px; background: #1e293b; overflow: hidden;">
+        <div style="background: #fb923c20; padding: 10px; text-align: center; border-bottom: 1px solid #fb923c40;">
+          <span style="color: #fb923c; font-weight: bold;">ActivityLog</span>
+        </div>
+        <div style="padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 1.8;">
+          <div><span style="color: #fbbf24;">PK</span> id (uuid)</div>
+          <div><span style="color: #fb923c;">FK</span> user_id → User (nullable)</div>
+          <div>action (enum)</div>
+          <div>entity_type (enum)</div>
+          <div>entity_id (uuid, nullable)</div>
+          <div>metadata (jsonb)</div>
+          <div>ip_address (text)</div>
+          <div>user_agent (text)</div>
+          <div>created_at (timestamp)</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; justify-content: center;">
+        <div style="background: #0f172a; border-radius: 8px; padding: 12px;">
+          <div style="color: #fb923c; font-weight: bold; font-size: 12px;">action enum</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px; font-family: monospace; line-height: 1.8;">
+            login | login_failed | logout<br>
+            user_invited | user_deactivated<br>
+            album_created | album_deleted<br>
+            media_uploaded | media_deleted<br>
+            comment_created<br>
+            member_added | member_removed<br>
+            settings_changed
+          </div>
+        </div>
+        <div style="background: #0f172a; border-radius: 8px; padding: 12px;">
+          <div style="color: #a78bfa; font-weight: bold; font-size: 12px;">entity_type enum</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px; font-family: monospace; line-height: 1.8;">
+            user | album | media | comment | settings
+          </div>
+        </div>
+        <div style="background: #0f172a; border-radius: 8px; padding: 12px;">
+          <div style="color: #4ade80; font-weight: bold; font-size: 12px;">metadata (jsonb) examples</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px; font-family: monospace; line-height: 1.8;">
+            {"count": 12, "album": "Liburan Bali"}<br>
+            {"email": "test@email.com"}<br>
+            {"setting": "registration", "from": "open", "to": "closed"}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- App Settings -->
+<div class="mockup" style="margin-bottom: 20px;">
+  <div class="mockup-header">App Settings — /admin/settings</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+
+      <div style="background: #0f172a; border-radius: 8px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="color: #e2e8f0; font-weight: bold; font-size: 13px;">App Name</div>
+            <div style="color: #64748b; font-size: 11px;">Displayed in header & PWA manifest</div>
+          </div>
+          <div style="background: #1e293b; border-radius: 6px; padding: 6px 12px; color: #e2e8f0; font-size: 12px;">Galeriku</div>
+        </div>
+      </div>
+
+      <div style="background: #0f172a; border-radius: 8px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="color: #e2e8f0; font-weight: bold; font-size: 13px;">Registration</div>
+            <div style="color: #64748b; font-size: 11px;">Allow new users to register</div>
+          </div>
+          <div style="width: 44px; height: 24px; background: #ef4444; border-radius: 12px; position: relative;">
+            <div style="width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: #0f172a; border-radius: 8px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="color: #e2e8f0; font-weight: bold; font-size: 13px;">Max Upload Size (Photo)</div>
+            <div style="color: #64748b; font-size: 11px;">Per file limit for photos</div>
+          </div>
+          <div style="background: #1e293b; border-radius: 6px; padding: 6px 12px; color: #e2e8f0; font-size: 12px;">20 MB</div>
+        </div>
+      </div>
+
+      <div style="background: #0f172a; border-radius: 8px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="color: #e2e8f0; font-weight: bold; font-size: 13px;">Max Upload Size (Video)</div>
+            <div style="color: #64748b; font-size: 11px;">Per file limit for videos</div>
+          </div>
+          <div style="background: #1e293b; border-radius: 6px; padding: 6px 12px; color: #e2e8f0; font-size: 12px;">500 MB</div>
+        </div>
+      </div>
+
+      <div style="background: #0f172a; border-radius: 8px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="color: #e2e8f0; font-weight: bold; font-size: 13px;">Storage Warning</div>
+            <div style="color: #64748b; font-size: 11px;">Alert when storage exceeds threshold</div>
+          </div>
+          <div style="background: #1e293b; border-radius: 6px; padding: 6px 12px; color: #e2e8f0; font-size: 12px;">80%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PWA & Feature Structure -->
+<div style="display: flex; gap: 16px; flex-wrap: wrap;">
+  <div style="flex: 1; min-width: 280px; background: #1e293b; border-radius: 8px; padding: 16px;">
+    <h3 style="margin-top: 0; color: #e2e8f0; font-size: 13px;">PWA Caching — Admin Routes</h3>
+    <div style="color: #94a3b8; font-size: 12px; line-height: 1.8;">
+      ✅ /admin/* → <span style="color: #fb923c;">Network Only</span><br>
+      ✅ No offline caching for admin<br>
+      ✅ Admin data always fresh<br>
+      ✅ Offline → redirect to "You're offline" page
+    </div>
+  </div>
+
+  <div style="flex: 1; min-width: 280px; background: #1e293b; border-radius: 8px; padding: 16px;">
+    <h3 style="margin-top: 0; color: #e2e8f0; font-size: 13px;">New Feature Folder</h3>
+    <div style="font-family: monospace; color: #94a3b8; font-size: 11px; line-height: 1.8;">
+      features/admin/<br>
+      ├── components/ <span style="color: #64748b;">(StatsCards, UserList, AlbumTable, ActivityFeed, SettingsForm, StorageBar)</span><br>
+      ├── actions/ <span style="color: #64748b;">(inviteUser, deactivateUser, resetPassword, updateSettings, deleteUser)</span><br>
+      ├── services/ <span style="color: #64748b;">(admin.service.ts — aggregation queries, activity log)</span><br>
+      └── types.ts
+    </div>
+  </div>
+</div>

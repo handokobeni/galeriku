@@ -1,0 +1,87 @@
+<h2>Galeriku — Architecture Overview</h2>
+<p class="subtitle">Next.js Full-Stack + PostgreSQL (Neon) + Cloudflare R2</p>
+
+<div class="mockup">
+  <div class="mockup-header">System Architecture</div>
+  <div class="mockup-body" style="padding: 24px; font-family: monospace; font-size: 13px; line-height: 1.6;">
+    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+
+      <!-- Client -->
+      <div style="border: 2px solid #60a5fa; border-radius: 12px; padding: 16px; width: 160px; text-align: center; background: #1e293b;">
+        <div style="font-size: 24px; margin-bottom: 8px;">🖥️</div>
+        <div style="color: #60a5fa; font-weight: bold;">Browser</div>
+        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">React (App Router)<br>Upload via Presigned URL</div>
+      </div>
+
+      <!-- Next.js -->
+      <div style="border: 2px solid #a78bfa; border-radius: 12px; padding: 16px; width: 200px; text-align: center; background: #1e293b;">
+        <div style="font-size: 24px; margin-bottom: 8px;">⚡</div>
+        <div style="color: #a78bfa; font-weight: bold;">Next.js (Vercel)</div>
+        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">
+          Server Components<br>
+          API Routes<br>
+          Server Actions<br>
+          Middleware (Auth Guard)
+        </div>
+      </div>
+
+      <!-- Services Column -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- PostgreSQL -->
+        <div style="border: 2px solid #4ade80; border-radius: 12px; padding: 12px; width: 160px; text-align: center; background: #1e293b;">
+          <div style="color: #4ade80; font-weight: bold;">PostgreSQL (Neon)</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Users, Albums, Media<br>Permissions, Tags<br>Comments, Favorites</div>
+        </div>
+
+        <!-- R2 -->
+        <div style="border: 2px solid #fb923c; border-radius: 12px; padding: 12px; width: 160px; text-align: center; background: #1e293b;">
+          <div style="color: #fb923c; font-weight: bold;">Cloudflare R2</div>
+          <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Original Files<br>Thumbnails<br>Video files</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow arrows -->
+    <div style="text-align: center; margin-top: 24px; color: #64748b; font-size: 12px;">
+      <div style="margin-bottom: 8px;">
+        <span style="color: #60a5fa;">Browser</span>
+        <span> → API Routes → </span>
+        <span style="color: #4ade80;">Neon DB</span>
+        <span style="color: #94a3b8;"> (metadata, auth, permissions)</span>
+      </div>
+      <div style="margin-bottom: 8px;">
+        <span style="color: #60a5fa;">Browser</span>
+        <span> → Presigned URL → </span>
+        <span style="color: #fb923c;">R2</span>
+        <span style="color: #94a3b8;"> (direct upload, no server middleman)</span>
+      </div>
+      <div>
+        <span style="color: #60a5fa;">Browser</span>
+        <span> → R2 Public URL → </span>
+        <span style="color: #94a3b8;">streaming/download (via signed URL)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 24px;">
+  <h3>Key Design Decisions</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #a78bfa;">
+      <div style="color: #a78bfa; font-weight: bold; margin-bottom: 4px;">Direct Upload ke R2</div>
+      <div style="color: #94a3b8; font-size: 13px;">File tidak lewat server Vercel — hemat bandwidth & menghindari limit 4.5MB body size</div>
+    </div>
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #4ade80;">
+      <div style="color: #4ade80; font-weight: bold; margin-bottom: 4px;">Neon Serverless Driver</div>
+      <div style="color: #94a3b8; font-size: 13px;">HTTP-based connection, cocok untuk Vercel serverless — tidak perlu persistent connection pool</div>
+    </div>
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #fb923c;">
+      <div style="color: #fb923c; font-weight: bold; margin-bottom: 4px;">Thumbnail di Client-side</div>
+      <div style="color: #94a3b8; font-size: 13px;">Generate thumbnail di browser sebelum upload — menghindari kebutuhan background job di Vercel</div>
+    </div>
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #60a5fa;">
+      <div style="color: #60a5fa; font-weight: bold; margin-bottom: 4px;">Signed URL untuk Akses</div>
+      <div style="color: #94a3b8; font-size: 13px;">Media diakses via time-limited signed URL — R2 bucket tetap private, akses dikontrol via API</div>
+    </div>
+  </div>
+</div>

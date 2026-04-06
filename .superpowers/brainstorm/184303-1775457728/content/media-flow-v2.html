@@ -1,0 +1,202 @@
+<h2>Galeriku — Upload & Media Flow v2 (Scalable)</h2>
+<p class="subtitle">Dioptimasi untuk concurrent users, batch operations, dan caching</p>
+
+<!-- Problems & Solutions -->
+<h3>Masalah & Solusi</h3>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; margin-bottom: 24px;">
+  <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #ef4444;">
+    <div style="color: #ef4444; font-weight: bold; font-size: 12px;">MASALAH: Presigned URL per file</div>
+    <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">Batch 50 foto = 50 API calls untuk presign</div>
+  </div>
+  <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #4ade80;">
+    <div style="color: #4ade80; font-weight: bold; font-size: 12px;">SOLUSI: Batch presign endpoint</div>
+    <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">1 API call → presign max 20 files sekaligus. Reduce round trips 20x.</div>
+  </div>
+
+  <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #ef4444;">
+    <div style="color: #ef4444; font-weight: bold; font-size: 12px;">MASALAH: Metadata save per file</div>
+    <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">50 upload = 50 DB inserts = 50 connections</div>
+  </div>
+  <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #4ade80;">
+    <div style="color: #4ade80; font-weight: bold; font-size: 12px;">SOLUSI: Batch metadata insert</div>
+    <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">Client kumpulkan completed uploads, kirim batch setiap 5 files atau setiap 3 detik. 1 DB transaction per batch.</div>
+  </div>
+
+  <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #ef4444;">
+    <div style="color: #ef4444; font-weight: bold; font-size: 12px;">MASALAH: Signed URL per thumbnail</div>
+    <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">Album 200 foto × 10 users = 2000 signed URL generations</div>
+  </div>
+  <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #4ade80;">
+    <div style="color: #4ade80; font-weight: bold; font-size: 12px;">SOLUSI: R2 Public Bucket untuk thumbnails + CDN</div>
+    <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">Thumbnails di public bucket terpisah (low-res, no privacy risk). Served via Cloudflare CDN. Original files tetap private + signed URL.</div>
+  </div>
+
+  <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #ef4444;">
+    <div style="color: #ef4444; font-weight: bold; font-size: 12px;">MASALAH: No caching layer</div>
+    <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">Setiap view = direct hit ke R2</div>
+  </div>
+  <div style="background: #1e293b; border-radius: 8px; padding: 16px; border-left: 3px solid #4ade80;">
+    <div style="color: #4ade80; font-weight: bold; font-size: 12px;">SOLUSI: Cloudflare Custom Domain untuk R2</div>
+    <div style="color: #94a3b8; font-size: 12px; margin-top: 6px;">R2 bucket di-attach ke custom domain → auto Cloudflare CDN caching. Thumbnails cached at edge. Originals via signed URL tetap aman.</div>
+  </div>
+</div>
+
+<!-- Revised Upload Flow -->
+<div class="mockup" style="margin-bottom: 20px;">
+  <div class="mockup-header">Upload Flow v2 — Batch Optimized</div>
+  <div class="mockup-body" style="padding: 24px;">
+    <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; justify-content: center;">
+
+      <div style="background: #0f172a; border-radius: 10px; padding: 14px; width: 155px; text-align: center;">
+        <div style="background: #60a5fa; color: #0f172a; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">1</div>
+        <div style="color: #60a5fa; font-weight: bold; margin-top: 6px; font-size: 12px;">Select Files</div>
+        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Validate type & size<br>Client-side</div>
+      </div>
+
+      <div style="color: #475569; align-self: center;">→</div>
+
+      <div style="background: #0f172a; border-radius: 10px; padding: 14px; width: 155px; text-align: center;">
+        <div style="background: #a78bfa; color: #0f172a; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">2</div>
+        <div style="color: #a78bfa; font-weight: bold; margin-top: 6px; font-size: 12px;">Gen Thumbnails</div>
+        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Parallel, client-side<br>Web Worker pool</div>
+      </div>
+
+      <div style="color: #475569; align-self: center;">→</div>
+
+      <div style="background: #0f172a; border-radius: 10px; padding: 14px; width: 155px; text-align: center; border: 1px solid #4ade8040;">
+        <div style="background: #4ade80; color: #0f172a; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">3</div>
+        <div style="color: #4ade80; font-weight: bold; margin-top: 6px; font-size: 12px;">Batch Presign</div>
+        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;"><span style="color: #4ade80;">1 API call</span><br>→ max 20 presigned URLs<br>(original + thumb pairs)</div>
+      </div>
+
+      <div style="color: #475569; align-self: center;">→</div>
+
+      <div style="background: #0f172a; border-radius: 10px; padding: 14px; width: 155px; text-align: center;">
+        <div style="background: #fb923c; color: #0f172a; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">4</div>
+        <div style="color: #fb923c; font-weight: bold; margin-top: 6px; font-size: 12px;">Upload ke R2</div>
+        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Concurrency: 3 files<br>Progress per file<br>Auto retry 3x</div>
+      </div>
+
+      <div style="color: #475569; align-self: center;">→</div>
+
+      <div style="background: #0f172a; border-radius: 10px; padding: 14px; width: 155px; text-align: center; border: 1px solid #f472b640;">
+        <div style="background: #f472b6; color: #0f172a; width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">5</div>
+        <div style="color: #f472b6; font-weight: bold; margin-top: 6px; font-size: 12px;">Batch Metadata</div>
+        <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;"><span style="color: #f472b6;">Batch insert</span><br>Every 5 files or 3s<br>1 DB transaction</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- R2 Bucket Strategy -->
+<div class="mockup" style="margin-bottom: 20px;">
+  <div class="mockup-header">R2 Dual-Bucket Strategy</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; gap: 24px; justify-content: center; flex-wrap: wrap;">
+
+      <div style="background: #0f172a; border-radius: 10px; padding: 20px; width: 280px; border: 2px solid #ef4444;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="color: #ef4444; font-size: 18px;">🔒</span>
+          <span style="color: #ef4444; font-weight: bold;">galeriku-private</span>
+        </div>
+        <div style="color: #94a3b8; font-size: 12px; line-height: 1.8;">
+          <div>• Original photos (full resolution)</div>
+          <div>• Original videos</div>
+          <div>• Access via <span style="color: #fbbf24;">signed URL only</span></div>
+          <div>• URL expiry: photo 1hr, video 4hr</div>
+          <div style="margin-top: 8px; color: #64748b;">Key: media/{album_id}/{media_id}/original.{ext}</div>
+        </div>
+      </div>
+
+      <div style="background: #0f172a; border-radius: 10px; padding: 20px; width: 280px; border: 2px solid #4ade80;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="color: #4ade80; font-size: 18px;">🌐</span>
+          <span style="color: #4ade80; font-weight: bold;">galeriku-thumbnails</span>
+        </div>
+        <div style="color: #94a3b8; font-size: 12px; line-height: 1.8;">
+          <div>• Thumbnails only (400px WebP, ~30KB)</div>
+          <div>• Public bucket + custom domain</div>
+          <div>• <span style="color: #4ade80;">Cloudflare CDN cached</span></div>
+          <div>• No signed URL needed</div>
+          <div style="margin-top: 8px; color: #64748b;">Key: {media_id}/thumb.webp</div>
+          <div style="margin-top: 4px; color: #fbbf24; font-size: 11px;">⚠️ Unguessable media_id (uuid) = security through obscurity + low-res only</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px; background: #0f172a; border-radius: 8px; padding: 12px; text-align: center; color: #94a3b8; font-size: 12px;">
+      <span style="color: #4ade80;">Thumbnails:</span> CDN cached → near-zero latency, unlimited concurrent viewers
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      <span style="color: #ef4444;">Originals:</span> Private + signed URL → secure, per-request access control
+    </div>
+  </div>
+</div>
+
+<!-- Viewing Optimization -->
+<div class="mockup" style="margin-bottom: 20px;">
+  <div class="mockup-header">Viewing — Optimized for Concurrent Users</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+
+      <div style="flex: 1; min-width: 220px; background: #0f172a; border-radius: 8px; padding: 16px;">
+        <div style="color: #60a5fa; font-weight: bold; font-size: 13px; margin-bottom: 8px;">Album Grid (thumbnails)</div>
+        <div style="color: #94a3b8; font-size: 12px; line-height: 1.8;">
+          1. Server fetch media list (DB query)<br>
+          2. Return media metadata + CDN thumbnail URL<br>
+          3. <span style="color: #4ade80;">No signed URL generation needed</span><br>
+          4. Thumbnails served from CDN edge<br>
+          5. Infinite scroll, 20 per page<br>
+          6. <span style="color: #4ade80;">ISR (Incremental Static Regen)</span> — album page cached, revalidated on upload
+        </div>
+      </div>
+
+      <div style="flex: 1; min-width: 220px; background: #0f172a; border-radius: 8px; padding: 16px;">
+        <div style="color: #a78bfa; font-weight: bold; font-size: 13px; margin-bottom: 8px;">Full View (original)</div>
+        <div style="color: #94a3b8; font-size: 12px; line-height: 1.8;">
+          1. User clicks media → request signed URL<br>
+          2. <span style="color: #fbbf24;">1 signed URL per click</span> (not batch)<br>
+          3. Permission check per request<br>
+          4. Prefetch next/prev for navigation<br>
+          5. Client cache signed URL until expiry
+        </div>
+      </div>
+
+      <div style="flex: 1; min-width: 220px; background: #0f172a; border-radius: 8px; padding: 16px;">
+        <div style="color: #fb923c; font-weight: bold; font-size: 13px; margin-bottom: 8px;">Video Streaming</div>
+        <div style="color: #94a3b8; font-size: 12px; line-height: 1.8;">
+          1. Signed URL (4hr expiry)<br>
+          2. HTML5 &lt;video&gt; native player<br>
+          3. R2 supports Range headers<br>
+          4. Browser handles buffering<br>
+          5. <span style="color: #4ade80;">No transcoding needed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scalability Summary -->
+<div style="background: #1e293b; border-radius: 8px; padding: 20px; border-left: 3px solid #4ade80;">
+  <div style="color: #4ade80; font-weight: bold; font-size: 14px; margin-bottom: 12px;">Scalability Summary</div>
+  <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px 16px; font-size: 12px;">
+    <div style="color: #64748b; font-weight: bold;">Scenario</div>
+    <div style="color: #64748b; font-weight: bold;">Before (v1)</div>
+    <div style="color: #64748b; font-weight: bold;">After (v2)</div>
+
+    <div style="color: #e2e8f0;">20 users upload 50 foto</div>
+    <div style="color: #ef4444;">1000 presign calls + 1000 DB inserts</div>
+    <div style="color: #4ade80;">50 batch presign calls + 200 batch inserts</div>
+
+    <div style="color: #e2e8f0;">10 users buka album 200 foto</div>
+    <div style="color: #ef4444;">2000 signed URL generations</div>
+    <div style="color: #4ade80;">0 signed URLs (CDN thumbnails) + ISR cache</div>
+
+    <div style="color: #e2e8f0;">5 users stream video</div>
+    <div style="color: #fbbf24;">5 signed URLs + direct R2</div>
+    <div style="color: #4ade80;">5 signed URLs + direct R2 (same, already efficient)</div>
+
+    <div style="color: #e2e8f0;">Vercel serverless load</div>
+    <div style="color: #ef4444;">High — many small function calls</div>
+    <div style="color: #4ade80;">Low — batched calls, CDN offloads reads</div>
+  </div>
+</div>

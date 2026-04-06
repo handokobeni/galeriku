@@ -1,0 +1,149 @@
+<h2>Galeriku — Data Model</h2>
+<p class="subtitle">Entity Relationship Diagram — PostgreSQL (Neon) via Drizzle ORM</p>
+
+<div class="mockup">
+  <div class="mockup-header">Entity Relationship</div>
+  <div class="mockup-body" style="padding: 24px; font-size: 13px;">
+
+    <!-- Row 1: Core entities -->
+    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px;">
+
+      <!-- User -->
+      <div style="border: 2px solid #60a5fa; border-radius: 10px; width: 220px; background: #1e293b; overflow: hidden;">
+        <div style="background: #60a5fa20; padding: 10px; text-align: center; border-bottom: 1px solid #60a5fa40;">
+          <span style="color: #60a5fa; font-weight: bold;">User</span>
+        </div>
+        <div style="padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 1.8;">
+          <div><span style="color: #fbbf24;">PK</span> id (uuid)</div>
+          <div>email (unique)</div>
+          <div>username (unique)</div>
+          <div>password_hash</div>
+          <div>display_name</div>
+          <div>avatar_url</div>
+          <div>role (owner | member)</div>
+          <div>created_at</div>
+          <div>updated_at</div>
+        </div>
+      </div>
+
+      <!-- Album -->
+      <div style="border: 2px solid #a78bfa; border-radius: 10px; width: 220px; background: #1e293b; overflow: hidden;">
+        <div style="background: #a78bfa20; padding: 10px; text-align: center; border-bottom: 1px solid #a78bfa40;">
+          <span style="color: #a78bfa; font-weight: bold;">Album</span>
+        </div>
+        <div style="padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 1.8;">
+          <div><span style="color: #fbbf24;">PK</span> id (uuid)</div>
+          <div><span style="color: #fb923c;">FK</span> created_by → User</div>
+          <div>name</div>
+          <div>description</div>
+          <div>cover_media_id</div>
+          <div>created_at</div>
+          <div>updated_at</div>
+        </div>
+      </div>
+
+      <!-- Media -->
+      <div style="border: 2px solid #4ade80; border-radius: 10px; width: 220px; background: #1e293b; overflow: hidden;">
+        <div style="background: #4ade8020; padding: 10px; text-align: center; border-bottom: 1px solid #4ade8040;">
+          <span style="color: #4ade80; font-weight: bold;">Media</span>
+        </div>
+        <div style="padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 1.8;">
+          <div><span style="color: #fbbf24;">PK</span> id (uuid)</div>
+          <div><span style="color: #fb923c;">FK</span> album_id → Album</div>
+          <div><span style="color: #fb923c;">FK</span> uploaded_by → User</div>
+          <div>type (photo | video)</div>
+          <div>filename</div>
+          <div>r2_key</div>
+          <div>thumbnail_r2_key</div>
+          <div>mime_type</div>
+          <div>size_bytes</div>
+          <div>width, height</div>
+          <div>duration (video)</div>
+          <div>created_at</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Junction & Feature tables -->
+    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+
+      <!-- AlbumMember -->
+      <div style="border: 2px solid #fb923c; border-radius: 10px; width: 200px; background: #1e293b; overflow: hidden;">
+        <div style="background: #fb923c20; padding: 10px; text-align: center; border-bottom: 1px solid #fb923c40;">
+          <span style="color: #fb923c; font-weight: bold;">AlbumMember</span>
+        </div>
+        <div style="padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 1.8;">
+          <div><span style="color: #fb923c;">FK</span> album_id → Album</div>
+          <div><span style="color: #fb923c;">FK</span> user_id → User</div>
+          <div>role (viewer | editor)</div>
+          <div>invited_at</div>
+        </div>
+      </div>
+
+      <!-- Tag -->
+      <div style="border: 2px solid #f472b6; border-radius: 10px; width: 200px; background: #1e293b; overflow: hidden;">
+        <div style="background: #f472b620; padding: 10px; text-align: center; border-bottom: 1px solid #f472b640;">
+          <span style="color: #f472b6; font-weight: bold;">Tag + MediaTag</span>
+        </div>
+        <div style="padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 1.8;">
+          <div style="color: #f472b6; font-size: 11px; margin-bottom: 4px;">— Tag —</div>
+          <div><span style="color: #fbbf24;">PK</span> id</div>
+          <div>name (unique)</div>
+          <div style="color: #f472b6; font-size: 11px; margin: 8px 0 4px;">— MediaTag —</div>
+          <div><span style="color: #fb923c;">FK</span> media_id → Media</div>
+          <div><span style="color: #fb923c;">FK</span> tag_id → Tag</div>
+        </div>
+      </div>
+
+      <!-- Comment -->
+      <div style="border: 2px solid #22d3ee; border-radius: 10px; width: 200px; background: #1e293b; overflow: hidden;">
+        <div style="background: #22d3ee20; padding: 10px; text-align: center; border-bottom: 1px solid #22d3ee40;">
+          <span style="color: #22d3ee; font-weight: bold;">Comment</span>
+        </div>
+        <div style="padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 1.8;">
+          <div><span style="color: #fbbf24;">PK</span> id (uuid)</div>
+          <div><span style="color: #fb923c;">FK</span> media_id → Media</div>
+          <div><span style="color: #fb923c;">FK</span> user_id → User</div>
+          <div>content</div>
+          <div>created_at</div>
+        </div>
+      </div>
+
+      <!-- Favorite -->
+      <div style="border: 2px solid #fbbf24; border-radius: 10px; width: 200px; background: #1e293b; overflow: hidden;">
+        <div style="background: #fbbf2420; padding: 10px; text-align: center; border-bottom: 1px solid #fbbf2440;">
+          <span style="color: #fbbf24; font-weight: bold;">Favorite</span>
+        </div>
+        <div style="padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 1.8;">
+          <div><span style="color: #fb923c;">FK</span> media_id → Media</div>
+          <div><span style="color: #fb923c;">FK</span> user_id → User</div>
+          <div>created_at</div>
+        </div>
+      </div>
+
+      <!-- Session -->
+      <div style="border: 2px solid #94a3b8; border-radius: 10px; width: 200px; background: #1e293b; overflow: hidden;">
+        <div style="background: #94a3b820; padding: 10px; text-align: center; border-bottom: 1px solid #94a3b840;">
+          <span style="color: #94a3b8; font-weight: bold;">Session</span>
+        </div>
+        <div style="padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; line-height: 1.8;">
+          <div><span style="color: #fbbf24;">PK</span> id</div>
+          <div><span style="color: #fb923c;">FK</span> user_id → User</div>
+          <div>expires_at</div>
+          <div>created_at</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Relationships -->
+    <div style="margin-top: 24px; padding: 16px; background: #0f172a; border-radius: 8px; color: #94a3b8; font-size: 12px;">
+      <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 8px;">Relationships</div>
+      <div>User 1 ↔ N Album (creator)</div>
+      <div>User N ↔ N Album (via AlbumMember — permission per album)</div>
+      <div>Album 1 ↔ N Media</div>
+      <div>Media N ↔ N Tag (via MediaTag)</div>
+      <div>User 1 ↔ N Comment, User 1 ↔ N Favorite</div>
+      <div>Media 1 ↔ N Comment, Media 1 ↔ N Favorite</div>
+    </div>
+  </div>
+</div>
