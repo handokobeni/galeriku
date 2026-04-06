@@ -1,7 +1,16 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { hash, verify, type Options } from "@node-rs/argon2";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
+
+const argon2Opts: Options = {
+  memoryCost: 65536, // 64 MiB
+  timeCost: 3,
+  parallelism: 4,
+  outputLen: 32,
+  algorithm: 2, // Argon2id
+};
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -16,6 +25,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+    password: {
+      hash: (password) => hash(password, argon2Opts),
+      verify: ({ password, hash: storedHash }) => verify(storedHash, password, argon2Opts),
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days

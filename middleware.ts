@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/features/auth/lib/auth";
 
 const publicPaths = ["/login", "/register", "/setup", "/api/auth"];
 
@@ -15,21 +14,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check session via Better Auth
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  });
+  // Lightweight session check — just verify cookie exists
+  // Actual session validation happens in (main)/layout.tsx via auth.api.getSession()
+  const sessionCookie =
+    request.cookies.get("better-auth.session_token") ??
+    request.cookies.get("__Secure-better-auth.session_token");
 
-  // No session → redirect to login
-  if (!session) {
+  if (!sessionCookie) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
-  }
-
-  // Admin routes → owner only
-  if (pathname.startsWith("/admin") && (session.user as Record<string, unknown>).role !== "owner") {
-    return NextResponse.redirect(new URL("/albums", request.url));
   }
 
   return NextResponse.next();
