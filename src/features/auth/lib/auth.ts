@@ -30,12 +30,12 @@ export const auth = betterAuth({
       username: {
         type: "string",
         required: true,
-        unique: true,
       },
       role: {
-        type: "string",
+        type: ["owner", "member"],
         required: false,
         defaultValue: "member",
+        input: false,
       },
     },
   },

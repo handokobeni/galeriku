@@ -1,6 +1,4 @@
-import { pgTable, text, timestamp, uuid, pgEnum } from "drizzle-orm/pg-core";
-
-export const userRoleEnum = pgEnum("user_role", ["owner", "member"]);
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -8,7 +6,7 @@ export const user = pgTable("user", {
   username: text("username").notNull().unique(),
   name: text("name").notNull(),
   image: text("image"),
-  role: userRoleEnum("role").notNull().default("member"),
+  role: text("role").notNull().default("member"),
   emailVerified: timestamp("email_verified"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

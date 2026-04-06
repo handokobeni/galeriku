@@ -7,7 +7,7 @@ import { auth } from "@/features/auth/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { count } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 
 const setupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -42,17 +42,21 @@ export async function setupOwner(_prev: SetupState, formData: FormData): Promise
   const { name, username, email, password } = parsed.data;
 
   try {
-    // Sign up via Better Auth
-    await auth.api.signUpEmail({
+    // Sign up via Better Auth (role is input:false, so set separately)
+    const res = await auth.api.signUpEmail({
       body: {
         name,
         email,
         password,
         username,
-        role: "owner",
       },
       headers: await headers(),
     });
+
+    // Set role to owner via direct DB update
+    if (res.user) {
+      await db.update(user).set({ role: "owner" }).where(eq(user.id, res.user.id));
+    }
 
     // Seed default app settings
     await db.insert(appSettings).values([
@@ -62,7 +66,8 @@ export async function setupOwner(_prev: SetupState, formData: FormData): Promise
       { key: "max_upload_video_mb", value: JSON.stringify(500) },
       { key: "storage_warning_pct", value: JSON.stringify(80) },
     ]).onConflictDoNothing();
-  } catch {
+  } catch (err) {
+    console.error("[setup] Error creating owner account:", err);
     return { error: "Failed to create account. Email may already be in use." };
   }
 

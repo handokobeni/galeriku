@@ -8,6 +8,13 @@
       "when": 1775464485304,
       "tag": "0000_polite_skullbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1775467619422,
+      "tag": "0001_lowly_lizard",
+      "breakpoints": true
     }
   ]
 }

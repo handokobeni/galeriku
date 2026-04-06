@@ -48,7 +48,6 @@ export async function register(_prev: RegisterState, formData: FormData): Promis
         email,
         password,
         username,
-        role: "member",
       },
       headers: await headers(),
     });
