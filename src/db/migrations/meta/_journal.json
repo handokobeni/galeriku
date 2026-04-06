@@ -15,6 +15,13 @@
       "when": 1775476846447,
       "tag": "0001_demonic_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775484694125,
+      "tag": "0002_demonic_hellcat",
+      "breakpoints": true
     }
   ]
 }
