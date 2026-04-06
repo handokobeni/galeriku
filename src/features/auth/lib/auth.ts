@@ -38,6 +38,11 @@ export const auth = betterAuth({
       maxAge: 60 * 5, // 5 minutes
     },
   },
+  advanced: {
+    database: {
+      generateId: "uuid",
+    },
+  },
   user: {
     additionalFields: {
       username: {
