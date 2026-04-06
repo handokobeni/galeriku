@@ -1,43 +1,107 @@
 import { describe, it, expect } from "vitest";
-import { getTableName } from "drizzle-orm";
-import { user, session, account, verification } from "../user";
+import { getTableName, getTableColumns } from "drizzle-orm";
+import { user, session, account, verification, userRelations, sessionRelations, accountRelations } from "../user";
 import { appSettings } from "../app-settings";
 
 describe("Database schema", () => {
-  it("user table has correct name", () => {
-    expect(getTableName(user)).toBe("user");
+  describe("user table", () => {
+    it("has correct table name", () => {
+      expect(getTableName(user)).toBe("user");
+    });
+
+    it("has all required columns", () => {
+      const columns = getTableColumns(user);
+      expect(columns).toHaveProperty("id");
+      expect(columns).toHaveProperty("email");
+      expect(columns).toHaveProperty("username");
+      expect(columns).toHaveProperty("name");
+      expect(columns).toHaveProperty("role");
+      expect(columns).toHaveProperty("emailVerified");
+      expect(columns).toHaveProperty("image");
+      expect(columns).toHaveProperty("createdAt");
+      expect(columns).toHaveProperty("updatedAt");
+    });
   });
 
-  it("session table has correct name", () => {
-    expect(getTableName(session)).toBe("session");
+  describe("session table", () => {
+    it("has correct table name", () => {
+      expect(getTableName(session)).toBe("session");
+    });
+
+    it("has all required columns", () => {
+      const columns = getTableColumns(session);
+      expect(columns).toHaveProperty("id");
+      expect(columns).toHaveProperty("token");
+      expect(columns).toHaveProperty("userId");
+      expect(columns).toHaveProperty("expiresAt");
+      expect(columns).toHaveProperty("ipAddress");
+      expect(columns).toHaveProperty("userAgent");
+      expect(columns).toHaveProperty("createdAt");
+      expect(columns).toHaveProperty("updatedAt");
+    });
   });
 
-  it("account table has correct name", () => {
-    expect(getTableName(account)).toBe("account");
+  describe("account table", () => {
+    it("has correct table name", () => {
+      expect(getTableName(account)).toBe("account");
+    });
+
+    it("has all required columns", () => {
+      const columns = getTableColumns(account);
+      expect(columns).toHaveProperty("id");
+      expect(columns).toHaveProperty("accountId");
+      expect(columns).toHaveProperty("providerId");
+      expect(columns).toHaveProperty("userId");
+      expect(columns).toHaveProperty("password");
+      expect(columns).toHaveProperty("accessToken");
+      expect(columns).toHaveProperty("refreshToken");
+      expect(columns).toHaveProperty("idToken");
+      expect(columns).toHaveProperty("scope");
+      expect(columns).toHaveProperty("createdAt");
+      expect(columns).toHaveProperty("updatedAt");
+    });
   });
 
-  it("verification table has correct name", () => {
-    expect(getTableName(verification)).toBe("verification");
+  describe("verification table", () => {
+    it("has correct table name", () => {
+      expect(getTableName(verification)).toBe("verification");
+    });
+
+    it("has all required columns", () => {
+      const columns = getTableColumns(verification);
+      expect(columns).toHaveProperty("id");
+      expect(columns).toHaveProperty("identifier");
+      expect(columns).toHaveProperty("value");
+      expect(columns).toHaveProperty("expiresAt");
+      expect(columns).toHaveProperty("createdAt");
+      expect(columns).toHaveProperty("updatedAt");
+    });
   });
 
-  it("app_settings table has correct name", () => {
-    expect(getTableName(appSettings)).toBe("app_settings");
+  describe("app_settings table", () => {
+    it("has correct table name", () => {
+      expect(getTableName(appSettings)).toBe("app_settings");
+    });
+
+    it("has all required columns", () => {
+      const columns = getTableColumns(appSettings);
+      expect(columns).toHaveProperty("key");
+      expect(columns).toHaveProperty("value");
+      expect(columns).toHaveProperty("updatedAt");
+    });
   });
 
-  it("user table has required columns", () => {
-    const columns = Object.keys(user);
-    expect(columns).toContain("id");
-    expect(columns).toContain("email");
-    expect(columns).toContain("username");
-    expect(columns).toContain("name");
-    expect(columns).toContain("role");
-    expect(columns).toContain("emailVerified");
-  });
+  describe("relations", () => {
+    it("exports user relations", () => {
+      expect(userRelations).toBeDefined();
+    });
 
-  it("session table has token column", () => {
-    const columns = Object.keys(session);
-    expect(columns).toContain("token");
-    expect(columns).toContain("userId");
-    expect(columns).toContain("expiresAt");
+    it("exports session relations", () => {
+      expect(sessionRelations).toBeDefined();
+    });
+
+    it("exports account relations", () => {
+      expect(accountRelations).toBeDefined();
+    });
   });
 });
