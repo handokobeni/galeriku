@@ -59,7 +59,8 @@ export async function GET(
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
-  } catch {
+  } catch (err) {
+    console.error("[thumbnail] Failed to fetch:", mediaRecord.thumbnailR2Key, err);
     return NextResponse.json({ error: "Failed to fetch thumbnail" }, { status: 500 });
   }
 }
