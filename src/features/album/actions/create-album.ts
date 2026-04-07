@@ -39,7 +39,8 @@ export async function createAlbumAction(
       description: parsed.data.description,
       createdBy: session.user.id,
     });
-  } catch {
+  } catch (err) {
+    console.error("[create-album] Failed:", err);
     return { error: "Failed to create album" };
   }
 
