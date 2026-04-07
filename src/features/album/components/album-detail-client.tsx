@@ -15,6 +15,7 @@ interface AlbumDetailClientProps {
   members: AlbumMemberInfo[];
   canEdit: boolean;
   canManage: boolean;
+  currentUserId: string;
 }
 
 export function AlbumDetailClient({
@@ -24,6 +25,7 @@ export function AlbumDetailClient({
   members,
   canEdit,
   canManage,
+  currentUserId,
 }: AlbumDetailClientProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
@@ -54,6 +56,7 @@ export function AlbumDetailClient({
         albumId={albumId}
         members={members}
         canManage={canManage}
+        currentUserId={currentUserId}
         open={membersOpen}
         onOpenChange={setMembersOpen}
       />

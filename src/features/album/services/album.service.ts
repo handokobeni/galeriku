@@ -112,6 +112,10 @@ export async function canEditAlbum(
 ): Promise<boolean> {
   if (userRole === "owner") return true;
 
+  // Album creator always has edit permission
+  const albumRecord = await getAlbumById(albumId);
+  if (albumRecord?.createdBy === userId) return true;
+
   const [member] = await db
     .select()
     .from(albumMember)
@@ -125,6 +129,22 @@ export async function canEditAlbum(
     .limit(1);
 
   return !!member;
+}
+
+/**
+ * Can manage album (invite members, change roles, delete album, edit metadata).
+ * Only the album creator and the app owner have this permission.
+ * Editors can upload/delete media but cannot manage members.
+ */
+export async function canManageAlbum(
+  albumId: string,
+  userId: string,
+  userRole: string
+): Promise<boolean> {
+  if (userRole === "owner") return true;
+
+  const albumRecord = await getAlbumById(albumId);
+  return albumRecord?.createdBy === userId;
 }
 
 export async function getAlbumMembers(albumId: string) {

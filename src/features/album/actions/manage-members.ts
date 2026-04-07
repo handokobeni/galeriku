@@ -60,6 +60,11 @@ export async function removeMemberAction(albumId: string, userId: string) {
   const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
+  // Cannot remove yourself
+  if (userId === session.user.id) {
+    return { error: "Cannot remove yourself from the album" };
+  }
+
   const userRole = session.user.role;
   const canManage = await canManageAlbum(albumId, session.user.id, userRole);
   if (!canManage) return { error: "Permission denied" };
@@ -76,6 +81,11 @@ export async function updateMemberRoleAction(
 ) {
   const session = await getSessionWithRole();
   if (!session) redirect("/login");
+
+  // Cannot change your own role
+  if (userId === session.user.id) {
+    return { error: "Cannot change your own role" };
+  }
 
   const userRole = session.user.role;
   const canManage = await canManageAlbum(albumId, session.user.id, userRole);

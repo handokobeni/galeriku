@@ -42,6 +42,7 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
       members={members}
       canEdit={hasEditAccess}
       canManage={canManage}
+      currentUserId={session.user.id}
     />
   );
 }

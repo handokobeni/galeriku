@@ -45,23 +45,23 @@ describe("MembersDialog", () => {
   });
 
   it("renders member list when open", () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     expect(screen.getByText("Beni")).toBeInTheDocument();
     expect(screen.getByText("Mama")).toBeInTheDocument();
   });
 
   it("shows search input for editors", () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     expect(screen.getByPlaceholderText(/search by name or email/i)).toBeInTheDocument();
   });
 
   it("hides search input for viewers", () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={false} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={false} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     expect(screen.queryByPlaceholderText(/search by name or email/i)).not.toBeInTheDocument();
   });
 
   it("calls searchUsersAction when typing in search input", async () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const input = screen.getByPlaceholderText(/search by name or email/i);
     await typeAndWaitForResults(input, "alice");
     await waitFor(() => {
@@ -70,7 +70,7 @@ describe("MembersDialog", () => {
   });
 
   it("shows search results dropdown", async () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const input = screen.getByPlaceholderText(/search by name or email/i);
     await typeAndWaitForResults(input, "alice");
     await waitFor(() => {
@@ -79,7 +79,7 @@ describe("MembersDialog", () => {
   });
 
   it("shows role selector after selecting a user from results", async () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const input = screen.getByPlaceholderText(/search by name or email/i);
     await typeAndWaitForResults(input, "alice");
     await waitFor(() => screen.getByText("Alice Search"));
@@ -89,27 +89,36 @@ describe("MembersDialog", () => {
   });
 
   it("renders editable role select for each member when canManage", () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const selects = screen.getAllByLabelText("Member role");
     expect(selects).toHaveLength(2);
   });
 
+  it("does not show role select or remove button for the current user", () => {
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u1" open={true} onOpenChange={() => {}} />);
+    const selects = screen.getAllByLabelText("Member role");
+    expect(selects).toHaveLength(1);
+    const removeButtons = screen.getAllByRole("button", { name: /remove member/i });
+    expect(removeButtons).toHaveLength(1);
+    expect(screen.getByText(/\(you\)/i)).toBeInTheDocument();
+  });
+
   it("calls updateMemberRoleAction when changing a member role", () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const selects = screen.getAllByLabelText("Member role");
     fireEvent.change(selects[1], { target: { value: "editor" } });
     expect(updateMemberRoleAction).toHaveBeenCalledWith("a1", "u2", "editor");
   });
 
   it("shows read-only role text for viewers", () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={false} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={false} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     expect(screen.queryByLabelText("Member role")).not.toBeInTheDocument();
     expect(screen.getByText("editor")).toBeInTheDocument();
     expect(screen.getByText("viewer")).toBeInTheDocument();
   });
 
   it("shows invite button after selecting a user", async () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const input = screen.getByPlaceholderText(/search by name or email/i);
     await typeAndWaitForResults(input, "alice");
     await waitFor(() => screen.getByText("Alice Search"));
@@ -118,7 +127,7 @@ describe("MembersDialog", () => {
   });
 
   it("calls inviteMemberByIdAction on invite button click", async () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const input = screen.getByPlaceholderText(/search by name or email/i);
     await typeAndWaitForResults(input, "alice");
     await waitFor(() => screen.getByText("Alice Search"));
@@ -130,7 +139,7 @@ describe("MembersDialog", () => {
   });
 
   it("calls removeMemberAction when remove button is clicked", async () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const removeButtons = screen.getAllByRole("button", { name: /remove member/i });
     fireEvent.click(removeButtons[0]);
     await waitFor(() => {
@@ -140,7 +149,7 @@ describe("MembersDialog", () => {
 
   it("shows error when inviteMemberByIdAction returns error", async () => {
     vi.mocked(inviteMemberByIdAction).mockResolvedValueOnce({ error: "Permission denied" });
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const input = screen.getByPlaceholderText(/search by name or email/i);
     await typeAndWaitForResults(input, "alice");
     await waitFor(() => screen.getByText("Alice Search"));
@@ -156,7 +165,7 @@ describe("MembersDialog", () => {
       { id: "u1", name: "Beni", email: "beni@test.com", image: null },
       { id: "u99", name: "Alice Search", email: "alice@test.com", image: null },
     ]);
-    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} open={true} onOpenChange={() => {}} />);
+    render(<MembersDialog albumId="a1" members={mockMembers} canManage={true} currentUserId="u3" open={true} onOpenChange={() => {}} />);
     const input = screen.getByPlaceholderText(/search by name or email/i);
     await typeAndWaitForResults(input, "b");
     // Alice is not a member, so she should appear in the dropdown
