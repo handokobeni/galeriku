@@ -11,9 +11,9 @@ export default async function AdminActivityPage() {
   const activities = (await getRecentActivity(100)) as unknown as ActivityLogEntry[];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 lg:p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Activity Log</h1>
+        <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Activity Log</h1>
         <p className="text-sm text-muted-foreground">Recent system events</p>
       </div>
       <ActivityFeed activities={activities} />

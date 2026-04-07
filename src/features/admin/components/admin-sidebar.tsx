@@ -25,41 +25,79 @@ const navItems = [
 export function AdminSidebar() {
   const pathname = usePathname();
 
+  const isActive = (href: string) =>
+    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+
   return (
-    <aside className="w-56 border-r border-border bg-card flex flex-col">
-      <div className="px-4 py-4 border-b border-border">
-        <Link
-          href="/albums"
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Back to app
-        </Link>
-        <h2 className="mt-3 text-lg font-bold tracking-tight">Admin</h2>
-      </div>
-      <nav className="flex-1 p-2 space-y-1">
-        {navItems.map((item) => {
-          const isActive =
-            item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                isActive
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              <item.icon className="size-4" />
-              {item.label}
-            </Link>
-          );
-        })}
+    <>
+      {/* Mobile: top bar with back link + bottom tab bar */}
+      <header className="lg:hidden sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3">
+          <Link
+            href="/albums"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            Back to app
+          </Link>
+          <h2 className="text-base font-bold tracking-tight">Admin</h2>
+        </div>
+      </header>
+
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-50">
+        <div className="flex items-center justify-around bg-background/95 backdrop-blur-xl border-t border-border pb-[env(safe-area-inset-bottom)] px-1 pt-1 overflow-x-auto">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex flex-col items-center gap-0.5 py-2 px-2 text-[10px] flex-shrink-0",
+                  active ? "text-primary font-medium" : "text-muted-foreground"
+                )}
+              >
+                <item.icon className="size-5" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
-    </aside>
+
+      {/* Desktop: left sidebar */}
+      <aside className="hidden lg:flex w-56 border-r border-border bg-card flex-col">
+        <div className="px-4 py-4 border-b border-border">
+          <Link
+            href="/albums"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            Back to app
+          </Link>
+          <h2 className="mt-3 text-lg font-bold tracking-tight">Admin</h2>
+        </div>
+        <nav className="flex-1 p-2 space-y-1">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                  active
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+              >
+                <item.icon className="size-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+    </>
   );
 }

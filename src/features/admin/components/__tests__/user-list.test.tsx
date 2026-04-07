@@ -15,18 +15,18 @@ const mockUsers = [
 describe("UserList", () => {
   it("renders all users", () => {
     render(<UserList users={mockUsers} currentUserId="u1" />);
-    expect(screen.getByText("Owner")).toBeInTheDocument();
-    expect(screen.getByText("Member")).toBeInTheDocument();
+    expect(screen.getAllByText("Owner").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Member").length).toBeGreaterThan(0);
   });
   it("shows role labels", () => {
     render(<UserList users={mockUsers} currentUserId="u1" />);
-    expect(screen.getByText("owner")).toBeInTheDocument();
-    expect(screen.getByText("member")).toBeInTheDocument();
+    expect(screen.getAllByText("owner").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("member").length).toBeGreaterThan(0);
   });
   it("does not show delete button for owner role users", () => {
     render(<UserList users={mockUsers} currentUserId="u1" />);
     const deleteButtons = screen.queryAllByLabelText("Delete user");
-    // u1 is owner role + current user → no delete; u2 is member → has delete
-    expect(deleteButtons).toHaveLength(1);
+    // u1 is owner role + current user → no delete; u2 is member → has delete (mobile + desktop = 2)
+    expect(deleteButtons).toHaveLength(2);
   });
 });

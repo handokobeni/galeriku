@@ -10,9 +10,9 @@ export default async function AdminSettingsPage() {
   const settings = await getAllSettings();
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 lg:p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">Application configuration</p>
       </div>
       <SettingsForm initial={settings} />

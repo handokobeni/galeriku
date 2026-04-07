@@ -29,15 +29,16 @@ const mockAlbums = [
 describe("AlbumTable", () => {
   it("renders album rows", () => {
     render(<AlbumTable albums={mockAlbums} />);
-    expect(screen.getByText("Liburan Bali")).toBeInTheDocument();
-    expect(screen.getByText("Beni")).toBeInTheDocument();
+    expect(screen.getAllByText("Liburan Bali").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Beni").length).toBeGreaterThan(0);
   });
   it("renders media count", () => {
     render(<AlbumTable albums={mockAlbums} />);
-    expect(screen.getByText("100")).toBeInTheDocument();
+    expect(screen.getAllByText("100").length).toBeGreaterThan(0);
   });
   it("renders delete button", () => {
     render(<AlbumTable albums={mockAlbums} />);
-    expect(screen.getByLabelText("Delete album")).toBeInTheDocument();
+    // mobile + desktop both render → 2 delete buttons
+    expect(screen.getAllByLabelText("Delete album").length).toBeGreaterThan(0);
   });
 });

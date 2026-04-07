@@ -23,9 +23,9 @@ export default async function AdminStoragePage() {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 lg:p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Storage</h1>
+        <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Storage</h1>
         <p className="text-sm text-muted-foreground">R2 storage usage breakdown</p>
       </div>
 
@@ -35,7 +35,8 @@ export default async function AdminStoragePage() {
         <div className="px-4 py-3 border-b border-border">
           <h3 className="text-sm font-semibold">Per Album</h3>
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[500px]">
           <thead className="bg-muted/30">
             <tr>
               <th className="text-left px-4 py-2 font-medium">Album</th>
@@ -55,6 +56,7 @@ export default async function AdminStoragePage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

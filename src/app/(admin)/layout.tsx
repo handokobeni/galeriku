@@ -9,9 +9,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (session.user.role !== "owner") redirect("/albums");
 
   return (
-    <div className="flex min-h-svh">
+    <div className="min-h-svh lg:flex">
       <AdminSidebar />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pb-20 lg:pb-0">{children}</main>
     </div>
   );
 }

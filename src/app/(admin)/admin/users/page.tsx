@@ -11,10 +11,10 @@ export default async function AdminUsersPage() {
   const users = await getAllUsersForAdmin();
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 lg:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Users</h1>
+          <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Users</h1>
           <p className="text-sm text-muted-foreground">{users.length} total users</p>
         </div>
         <InviteUserDialog />
