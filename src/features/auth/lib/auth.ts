@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { hash, verify, type Options } from "@node-rs/argon2";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
+import { sendEmail, buildResetPasswordEmail } from "@/shared/lib/email";
 
 const argon2Opts: Options = {
   memoryCost: 65536, // 64 MiB
@@ -22,6 +23,17 @@ export const auth = betterAuth({
     password: {
       hash: (password) => hash(password, argon2Opts),
       verify: ({ password, hash: storedHash }) => verify(storedHash, password, argon2Opts),
+    },
+    sendResetPassword: async ({ user, url }) => {
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: "Reset your Galeriku password",
+          html: buildResetPasswordEmail(user.name, url),
+        });
+      } catch (err) {
+        console.error("[auth] Failed to send reset email:", err);
+      }
     },
   },
   session: {

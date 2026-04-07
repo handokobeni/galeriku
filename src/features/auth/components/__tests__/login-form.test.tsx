@@ -3,8 +3,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockPush = vi.fn();
 
+const mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
+  useSearchParams: () => mockSearchParams,
 }));
 
 vi.mock("@/features/auth/lib/auth-client", () => ({
