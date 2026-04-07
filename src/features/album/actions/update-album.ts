@@ -1,7 +1,6 @@
 "use server";
 
-import { auth } from "@/features/auth/lib/auth";
-import { headers } from "next/headers";
+import { getSessionWithRole } from "@/features/auth/lib/session";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { updateAlbum, canEditAlbum } from "../services/album.service";
@@ -16,10 +15,10 @@ export async function updateAlbumAction(
   albumId: string,
   data: { name?: string; description?: string }
 ) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
-  const userRole = ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const userRole = session.user.role;
   const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
   if (!canEdit) return { error: "Permission denied" };
 

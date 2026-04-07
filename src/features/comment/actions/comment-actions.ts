@@ -1,7 +1,6 @@
 "use server";
 
-import { auth } from "@/features/auth/lib/auth";
-import { headers } from "next/headers";
+import { getSessionWithRole } from "@/features/auth/lib/session";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { canAccessAlbum } from "@/features/album/services/album.service";
@@ -14,7 +13,7 @@ const commentSchema = z.object({
 });
 
 export async function addCommentAction(mediaId: string, content: string) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
   const parsed = commentSchema.safeParse({ content });
@@ -23,7 +22,7 @@ export async function addCommentAction(mediaId: string, content: string) {
   const mediaRecord = await getMediaById(mediaId);
   if (!mediaRecord) return { error: "Media not found" };
 
-  const userRole = ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const userRole = session.user.role;
   const canAccess = await canAccessAlbum(mediaRecord.albumId, session.user.id, userRole);
   if (!canAccess) return { error: "Permission denied" };
 
@@ -33,7 +32,7 @@ export async function addCommentAction(mediaId: string, content: string) {
 }
 
 export async function deleteCommentAction(commentId: string, mediaId: string) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
   await deleteComment(commentId);

@@ -1,7 +1,6 @@
 "use server";
 
-import { auth } from "@/features/auth/lib/auth";
-import { headers } from "next/headers";
+import { getSessionWithRole } from "@/features/auth/lib/session";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { canEditAlbum } from "@/features/album/services/album.service";
@@ -27,14 +26,14 @@ const saveMediaSchema = z.object({
 });
 
 export async function saveMediaAction(data: z.infer<typeof saveMediaSchema>) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
   const parsed = saveMediaSchema.safeParse(data);
   if (!parsed.success) return { error: "Invalid data" };
 
   const { albumId, items } = parsed.data;
-  const userRole = ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const userRole = session.user.role;
 
   const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
   if (!canEdit) return { error: "Permission denied" };

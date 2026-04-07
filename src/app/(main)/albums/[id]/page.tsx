@@ -1,5 +1,4 @@
-import { auth } from "@/features/auth/lib/auth";
-import { headers } from "next/headers";
+import { getSessionWithRole } from "@/features/auth/lib/session";
 import { redirect, notFound } from "next/navigation";
 import {
   getAlbumById,
@@ -16,11 +15,10 @@ interface AlbumDetailPageProps {
 
 export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) {
   const { id } = await params;
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
-  const userRole =
-    ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const userRole = session.user.role;
 
   const albumData = await getAlbumById(id);
   if (!albumData) notFound();

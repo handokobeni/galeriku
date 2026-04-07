@@ -1,7 +1,6 @@
 "use server";
 
-import { auth } from "@/features/auth/lib/auth";
-import { headers } from "next/headers";
+import { getSessionWithRole } from "@/features/auth/lib/session";
 import { redirect } from "next/navigation";
 import {
   addAlbumMember,
@@ -20,10 +19,10 @@ export async function inviteMemberAction(
   email: string,
   role: AlbumMemberRole = "viewer"
 ) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
-  const userRole = ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const userRole = session.user.role;
   const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
   if (!canEdit) return { error: "Permission denied" };
 
@@ -45,10 +44,10 @@ export async function inviteMemberByIdAction(
   userId: string,
   role: AlbumMemberRole = "viewer"
 ) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
-  const userRole = ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const userRole = session.user.role;
   const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
   if (!canEdit) return { error: "Permission denied" };
 
@@ -58,10 +57,10 @@ export async function inviteMemberByIdAction(
 }
 
 export async function removeMemberAction(albumId: string, userId: string) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
-  const userRole = ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const userRole = session.user.role;
   const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
   if (!canEdit) return { error: "Permission denied" };
 
@@ -75,10 +74,10 @@ export async function updateMemberRoleAction(
   userId: string,
   role: AlbumMemberRole
 ) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
-  const userRole = ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const userRole = session.user.role;
   const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
   if (!canEdit) return { error: "Permission denied" };
 

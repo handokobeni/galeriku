@@ -1,5 +1,4 @@
-import { auth } from "@/features/auth/lib/auth";
-import { headers } from "next/headers";
+import { getSessionWithRole } from "@/features/auth/lib/session";
 import { redirect } from "next/navigation";
 import { searchMedia } from "@/features/search/services/search.service";
 import { SearchBar } from "@/features/search/components/search-bar";
@@ -11,10 +10,10 @@ interface SearchPageProps {
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { q } = await searchParams;
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
-  const userRole = ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const userRole = session.user.role;
   const results = q ? await searchMedia(q, session.user.id, userRole) : [];
 
   return (
