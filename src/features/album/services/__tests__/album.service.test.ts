@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/db", () => ({
   db: {
@@ -32,6 +32,7 @@ import {
   removeAlbumMember,
   updateMemberRole,
 } from "../album.service";
+import { db } from "@/db";
 
 describe("Album service", () => {
   it("exports createAlbum", () => { expect(typeof createAlbum).toBe("function"); });
@@ -56,5 +57,126 @@ describe("Album permission logic", () => {
   it("canEditAlbum returns true for owner role", async () => {
     const result = await canEditAlbum("album-1", "user-1", "owner");
     expect(result).toBe(true);
+  });
+});
+
+describe("Album service behavior", () => {
+  const dbMock = db as unknown as Record<string, ReturnType<typeof vi.fn>>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    dbMock.select.mockReturnThis();
+    dbMock.from.mockReturnThis();
+    dbMock.where.mockReturnThis();
+    dbMock.leftJoin.mockReturnThis();
+    dbMock.innerJoin.mockReturnThis();
+    dbMock.insert.mockReturnThis();
+    dbMock.values.mockReturnThis();
+    dbMock.delete.mockReturnThis();
+    dbMock.update.mockReturnThis();
+    dbMock.set.mockReturnThis();
+    dbMock.orderBy.mockReturnThis();
+    dbMock.onConflictDoNothing.mockResolvedValue(undefined);
+    dbMock.returning.mockResolvedValue([{ id: "album-1", name: "Test" }]);
+    dbMock.limit.mockResolvedValue([]);
+  });
+
+  it("createAlbum inserts album and member, returns new album", async () => {
+    dbMock.returning
+      .mockResolvedValueOnce([{ id: "album-1", name: "My Album" }])
+      .mockResolvedValueOnce([]);
+    const result = await createAlbum({ name: "My Album", createdBy: "user-1" });
+    expect(db.insert).toHaveBeenCalled();
+    expect(result).toEqual({ id: "album-1", name: "My Album" });
+  });
+
+  it("getAlbumsForUser with owner role calls orderBy without innerJoin filter", async () => {
+    dbMock.orderBy.mockResolvedValue([{ id: "album-1", name: "Test" }]);
+    const result = await getAlbumsForUser("user-1", "owner");
+    expect(db.select).toHaveBeenCalled();
+    expect(Array.isArray(result)).toBe(true);
+  });
+
+  it("getAlbumsForUser with member role uses innerJoin and where", async () => {
+    dbMock.orderBy.mockResolvedValue([]);
+    const result = await getAlbumsForUser("user-1", "member");
+    expect(db.innerJoin).toHaveBeenCalled();
+    expect(Array.isArray(result)).toBe(true);
+  });
+
+  it("getAlbumById returns album when found", async () => {
+    dbMock.limit.mockResolvedValue([{ id: "album-1", name: "Test" }]);
+    const result = await getAlbumById("album-1");
+    expect(result).toEqual({ id: "album-1", name: "Test" });
+  });
+
+  it("getAlbumById returns null when not found", async () => {
+    dbMock.limit.mockResolvedValue([]);
+    const result = await getAlbumById("nonexistent");
+    expect(result).toBeNull();
+  });
+
+  it("updateAlbum calls update and set and where", async () => {
+    await updateAlbum("album-1", { name: "Updated" });
+    expect(db.update).toHaveBeenCalled();
+    expect(db.set).toHaveBeenCalled();
+    expect(db.where).toHaveBeenCalled();
+    expect(db.returning).toHaveBeenCalled();
+  });
+
+  it("deleteAlbum calls delete", async () => {
+    dbMock.where.mockResolvedValue(undefined);
+    await deleteAlbum("album-1");
+    expect(db.delete).toHaveBeenCalled();
+  });
+
+  it("canAccessAlbum returns false when member not found", async () => {
+    dbMock.limit.mockResolvedValue([]);
+    const result = await canAccessAlbum("album-1", "user-1", "member");
+    expect(result).toBe(false);
+  });
+
+  it("canAccessAlbum returns true when member exists", async () => {
+    dbMock.limit.mockResolvedValue([{ userId: "user-1" }]);
+    const result = await canAccessAlbum("album-1", "user-1", "member");
+    expect(result).toBe(true);
+  });
+
+  it("canEditAlbum returns false when no editor record found", async () => {
+    dbMock.limit.mockResolvedValue([]);
+    const result = await canEditAlbum("album-1", "user-1", "member");
+    expect(result).toBe(false);
+  });
+
+  it("canEditAlbum returns true when editor record found", async () => {
+    dbMock.limit.mockResolvedValue([{ userId: "user-1", role: "editor" }]);
+    const result = await canEditAlbum("album-1", "user-1", "member");
+    expect(result).toBe(true);
+  });
+
+  it("getAlbumMembers returns members joined with user", async () => {
+    dbMock.where.mockResolvedValue([{ userId: "user-1", role: "editor" }]);
+    const result = await getAlbumMembers("album-1");
+    expect(db.innerJoin).toHaveBeenCalled();
+    expect(Array.isArray(result)).toBe(true);
+  });
+
+  it("addAlbumMember calls insert with onConflictDoNothing", async () => {
+    await addAlbumMember("album-1", "user-2", "viewer");
+    expect(db.insert).toHaveBeenCalled();
+    expect(db.onConflictDoNothing).toHaveBeenCalled();
+  });
+
+  it("removeAlbumMember calls delete", async () => {
+    dbMock.where.mockResolvedValue(undefined);
+    await removeAlbumMember("album-1", "user-2");
+    expect(db.delete).toHaveBeenCalled();
+  });
+
+  it("updateMemberRole calls update with new role", async () => {
+    dbMock.where.mockResolvedValue(undefined);
+    await updateMemberRole("album-1", "user-2", "editor");
+    expect(db.update).toHaveBeenCalled();
+    expect(db.set).toHaveBeenCalled();
   });
 });
