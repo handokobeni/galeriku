@@ -178,7 +178,10 @@ export function MembersDialog({
         <div className="space-y-2 max-h-60 overflow-y-auto">
           {members.map((member) => {
             const isSelf = member.userId === currentUserId;
-            const canEditMember = canManage && !isSelf;
+            const isOwner = member.role === "owner";
+            // Album creator (owner role) can never be edited or removed by anyone.
+            // Users can never edit/remove themselves.
+            const canEditMember = canManage && !isSelf && !isOwner;
 
             return (
               <div key={member.userId} className="flex items-center gap-2 p-2 rounded-lg">
@@ -220,7 +223,11 @@ export function MembersDialog({
                     </button>
                   </>
                 ) : (
-                  <span className="text-xs text-muted-foreground capitalize">
+                  <span
+                    className={`text-xs capitalize ${
+                      isOwner ? "text-primary font-medium" : "text-muted-foreground"
+                    }`}
+                  >
                     {member.role}
                   </span>
                 )}

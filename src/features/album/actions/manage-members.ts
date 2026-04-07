@@ -7,6 +7,7 @@ import {
   removeAlbumMember,
   updateMemberRole,
   canManageAlbum,
+  getAlbumById,
 } from "../services/album.service";
 import { db } from "@/db";
 import { user } from "@/db/schema";
@@ -60,9 +61,14 @@ export async function removeMemberAction(albumId: string, userId: string) {
   const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
-  // Cannot remove yourself
   if (userId === session.user.id) {
     return { error: "Cannot remove yourself from the album" };
+  }
+
+  // Cannot remove the album creator
+  const albumRecord = await getAlbumById(albumId);
+  if (albumRecord?.createdBy === userId) {
+    return { error: "Cannot remove the album owner" };
   }
 
   const userRole = session.user.role;
@@ -82,9 +88,14 @@ export async function updateMemberRoleAction(
   const session = await getSessionWithRole();
   if (!session) redirect("/login");
 
-  // Cannot change your own role
   if (userId === session.user.id) {
     return { error: "Cannot change your own role" };
+  }
+
+  // Cannot change the album creator's role
+  const albumRecord = await getAlbumById(albumId);
+  if (albumRecord?.createdBy === userId) {
+    return { error: "Cannot change the album owner's role" };
   }
 
   const userRole = session.user.role;

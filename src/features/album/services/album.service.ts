@@ -148,7 +148,10 @@ export async function canManageAlbum(
 }
 
 export async function getAlbumMembers(albumId: string) {
-  return db
+  const albumRecord = await getAlbumById(albumId);
+  const creatorId = albumRecord?.createdBy;
+
+  const rows = await db
     .select({
       userId: albumMember.userId,
       userName: user.name,
@@ -159,6 +162,11 @@ export async function getAlbumMembers(albumId: string) {
     .from(albumMember)
     .innerJoin(user, eq(albumMember.userId, user.id))
     .where(eq(albumMember.albumId, albumId));
+
+  return rows.map((row) => ({
+    ...row,
+    role: row.userId === creatorId ? ("owner" as const) : row.role,
+  }));
 }
 
 export async function addAlbumMember(

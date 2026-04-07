@@ -161,11 +161,22 @@ describe("Album service behavior", () => {
     expect(result).toBe(true);
   });
 
-  it("getAlbumMembers returns members joined with user", async () => {
-    dbMock.where.mockResolvedValue([{ userId: "user-1", role: "editor" }]);
+  it("getAlbumMembers maps creator role to 'owner'", async () => {
+    // First where() is for getAlbumById (chainable → limit). Second where() is the member query (terminal).
+    let whereCallCount = 0;
+    dbMock.where.mockImplementation(function (this: unknown) {
+      whereCallCount++;
+      if (whereCallCount === 1) return this; // chainable for getAlbumById
+      return Promise.resolve([
+        { userId: "user-1", userName: "Creator", userEmail: "c@test.com", role: "editor", invitedAt: new Date() },
+        { userId: "user-2", userName: "Other", userEmail: "o@test.com", role: "viewer", invitedAt: new Date() },
+      ]) as unknown;
+    });
+    dbMock.limit.mockResolvedValueOnce([{ id: "album-1", createdBy: "user-1" }]);
+
     const result = await getAlbumMembers("album-1");
-    expect(db.innerJoin).toHaveBeenCalled();
-    expect(Array.isArray(result)).toBe(true);
+    expect(result[0].role).toBe("owner");
+    expect(result[1].role).toBe("viewer");
   });
 
   it("addAlbumMember calls insert with onConflictDoNothing", async () => {
