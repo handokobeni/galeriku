@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { authClient } from "@/features/auth/lib/auth-client";
+import { checkEmailAndRequestReset } from "@/features/auth/actions/forgot-password";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,18 +17,22 @@ import Link from "next/link";
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     setPending(true);
 
-    await authClient.requestPasswordReset({
-      email,
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    const result = await checkEmailAndRequestReset(email);
 
-    // Always show success (don't reveal whether email exists)
+    if (result.error) {
+      setError(result.error);
+      setPending(false);
+      return;
+    }
+
     setSuccess(true);
     setPending(false);
   };
@@ -41,7 +45,7 @@ export function ForgotPasswordForm() {
             Check your email
           </CardTitle>
           <CardDescription>
-            If an account exists for {email}, we&apos;ve sent password reset instructions.
+            We&apos;ve sent password reset instructions to {email}.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -68,6 +72,11 @@ export function ForgotPasswordForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
