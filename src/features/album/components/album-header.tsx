@@ -32,7 +32,7 @@ export function AlbumHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="size-9 rounded-xl" onClick={onMembersClick}>
+        <Button variant="ghost" size="icon" className="size-9 rounded-xl" aria-label="Members" onClick={onMembersClick}>
           <Users className="size-4" />
         </Button>
         {canEdit && (

@@ -25,3 +25,7 @@ export async function closeDb() {
   // Re-create for any subsequent use in the same process
   sql = createSql();
 }
+
+export async function setRegistrationOpen(open: boolean) {
+  await sql`UPDATE app_settings SET value = ${JSON.stringify(open)}::jsonb WHERE key = 'registration_open'`;
+}
