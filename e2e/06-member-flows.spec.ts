@@ -208,9 +208,9 @@ test("can edit member role from members dialog", async ({ page }) => {
   // Bob should appear in the members list
   await expect(page.getByText("bob@test.com")).toBeVisible();
 
-  // Change Bob's role to editor — Bob is the second member (after the owner)
-  // so use nth(1) to target his role select
-  const roleSelect = page.getByLabel("Member role").nth(1);
+  // Change Bob's role to editor — owner has no select (shown as "Owner" text),
+  // so Bob is the only Member role select. Use nth(0) / first().
+  const roleSelect = page.getByLabel("Member role").first();
   await expect(roleSelect).toHaveValue("viewer");
   await roleSelect.selectOption("editor");
 
