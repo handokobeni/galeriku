@@ -42,3 +42,26 @@ next-env.d.ts
 
 # superpowers
 .superpowers/
+
+# IDE / editor
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+desktop.ini
+
+# logs
+*.log
+logs/
+
+# temporary
+tmp/
+temp/
+*.tmp
+
+# turbo
+.turbo/
