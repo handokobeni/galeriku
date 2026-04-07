@@ -19,9 +19,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm dev",
+    // Use .env.test so dev server connects to galeriku_test DB
+    command: "dotenv -e .env.test -- next dev",
     url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false, // Always start fresh server with test env
     timeout: 120 * 1000,
   },
 });
