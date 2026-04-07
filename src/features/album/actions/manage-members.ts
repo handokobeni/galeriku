@@ -6,7 +6,7 @@ import {
   addAlbumMember,
   removeAlbumMember,
   updateMemberRole,
-  canEditAlbum,
+  canManageAlbum,
 } from "../services/album.service";
 import { db } from "@/db";
 import { user } from "@/db/schema";
@@ -23,8 +23,8 @@ export async function inviteMemberAction(
   if (!session) redirect("/login");
 
   const userRole = session.user.role;
-  const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
-  if (!canEdit) return { error: "Permission denied" };
+  const canManage = await canManageAlbum(albumId, session.user.id, userRole);
+  if (!canManage) return { error: "Permission denied" };
 
   const [targetUser] = await db
     .select({ id: user.id })
@@ -48,8 +48,8 @@ export async function inviteMemberByIdAction(
   if (!session) redirect("/login");
 
   const userRole = session.user.role;
-  const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
-  if (!canEdit) return { error: "Permission denied" };
+  const canManage = await canManageAlbum(albumId, session.user.id, userRole);
+  if (!canManage) return { error: "Permission denied" };
 
   await addAlbumMember(albumId, userId, role);
   revalidatePath(`/albums/${albumId}`);
@@ -61,8 +61,8 @@ export async function removeMemberAction(albumId: string, userId: string) {
   if (!session) redirect("/login");
 
   const userRole = session.user.role;
-  const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
-  if (!canEdit) return { error: "Permission denied" };
+  const canManage = await canManageAlbum(albumId, session.user.id, userRole);
+  if (!canManage) return { error: "Permission denied" };
 
   await removeAlbumMember(albumId, userId);
   revalidatePath(`/albums/${albumId}`);
@@ -78,8 +78,8 @@ export async function updateMemberRoleAction(
   if (!session) redirect("/login");
 
   const userRole = session.user.role;
-  const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
-  if (!canEdit) return { error: "Permission denied" };
+  const canManage = await canManageAlbum(albumId, session.user.id, userRole);
+  if (!canManage) return { error: "Permission denied" };
 
   await updateMemberRole(albumId, userId, role);
   revalidatePath(`/albums/${albumId}`);

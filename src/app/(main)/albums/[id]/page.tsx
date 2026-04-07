@@ -4,6 +4,7 @@ import {
   getAlbumById,
   canAccessAlbum,
   canEditAlbum,
+  canManageAlbum,
   getAlbumMembers,
 } from "@/features/album/services/album.service";
 import { getMediaForAlbum } from "@/features/media/services/media.service";
@@ -27,6 +28,7 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
   if (!hasAccess) redirect("/albums");
 
   const hasEditAccess = await canEditAlbum(id, session.user.id, userRole);
+  const canManage = await canManageAlbum(id, session.user.id, userRole);
   const [mediaItems, members] = await Promise.all([
     getMediaForAlbum(id),
     getAlbumMembers(id),
@@ -39,6 +41,7 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
       mediaItems={mediaItems}
       members={members}
       canEdit={hasEditAccess}
+      canManage={canManage}
     />
   );
 }

@@ -29,7 +29,7 @@ interface UserSearchResult {
 interface MembersDialogProps {
   albumId: string;
   members: AlbumMemberInfo[];
-  canEdit: boolean;
+  canManage: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -37,7 +37,7 @@ interface MembersDialogProps {
 export function MembersDialog({
   albumId,
   members,
-  canEdit,
+  canManage,
   open,
   onOpenChange,
 }: MembersDialogProps) {
@@ -104,7 +104,7 @@ export function MembersDialog({
           <DialogTitle>Members</DialogTitle>
         </DialogHeader>
 
-        {canEdit && (
+        {canManage && (
           <div className="space-y-2">
             {/* Search input with autocomplete */}
             <div className="relative">
@@ -183,7 +183,7 @@ export function MembersDialog({
                   {member.userEmail}
                 </p>
               </div>
-              {canEdit ? (
+              {canManage ? (
                 <>
                   <select
                     value={member.role}

@@ -140,6 +140,46 @@ test("can invite member via search autocomplete", async ({ page }) => {
   await expect(page.getByText("alice@test.com")).toBeVisible();
 });
 
+test("editor cannot manage members", async ({ page }) => {
+  await createOwnerAccount(page);
+  await setRegistrationOpen(true);
+
+  // Create a member account for the editor
+  await logout(page);
+  await registerMember(page, "Editor User", "editoruser", "editor@test.com");
+
+  // Login as owner, create album, invite editor as editor role
+  await loginAs(page, "owner@test.com");
+  await page.goto("/albums");
+  await page.getByText("New Album").click();
+  await page.getByLabel("Album Name").fill("Test Album");
+  await page.getByRole("button", { name: /^create album$/i }).click();
+  await page.getByText("Test Album").click();
+
+  // Open members dialog and invite Editor User as editor
+  await page.getByRole("button", { name: "Members" }).click();
+  await page.getByPlaceholder(/search by name or email/i).fill("Editor");
+  await expect(page.getByText("Editor User")).toBeVisible();
+  await page.getByText("Editor User").click();
+  const inviteSelect = page.locator("select").first();
+  await inviteSelect.selectOption("editor");
+  await page.getByRole("button", { name: /invite as editor/i }).click();
+  await expect(page.getByText("editor@test.com")).toBeVisible();
+
+  // Close dialog and login as editor
+  await page.keyboard.press("Escape");
+  await loginAs(page, "editor@test.com");
+  await page.goto("/albums");
+  await page.getByText("Test Album").click();
+
+  // Open members dialog as editor
+  await page.getByRole("button", { name: "Members" }).click();
+
+  // Editor should NOT see the search input or member management controls
+  await expect(page.getByPlaceholder(/search by name or email/i)).not.toBeVisible();
+  await expect(page.getByLabel("Member role")).not.toBeVisible();
+});
+
 test("can edit member role from members dialog", async ({ page }) => {
   await createOwnerAccount(page);
   await setRegistrationOpen(true);

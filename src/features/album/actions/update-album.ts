@@ -3,7 +3,7 @@
 import { getSessionWithRole } from "@/features/auth/lib/session";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { updateAlbum, canEditAlbum } from "../services/album.service";
+import { updateAlbum, canManageAlbum } from "../services/album.service";
 import { revalidatePath } from "next/cache";
 
 const updateAlbumSchema = z.object({
@@ -19,8 +19,8 @@ export async function updateAlbumAction(
   if (!session) redirect("/login");
 
   const userRole = session.user.role;
-  const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
-  if (!canEdit) return { error: "Permission denied" };
+  const canManage = await canManageAlbum(albumId, session.user.id, userRole);
+  if (!canManage) return { error: "Permission denied" };
 
   const parsed = updateAlbumSchema.safeParse(data);
   if (!parsed.success) return { error: "Invalid data" };

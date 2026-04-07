@@ -2,7 +2,7 @@
 
 import { getSessionWithRole } from "@/features/auth/lib/session";
 import { redirect } from "next/navigation";
-import { deleteAlbum, canEditAlbum } from "../services/album.service";
+import { deleteAlbum, canManageAlbum } from "../services/album.service";
 import { revalidatePath } from "next/cache";
 
 export async function deleteAlbumAction(albumId: string) {
@@ -10,8 +10,8 @@ export async function deleteAlbumAction(albumId: string) {
   if (!session) redirect("/login");
 
   const userRole = session.user.role;
-  const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
-  if (!canEdit) return { error: "Permission denied" };
+  const canManage = await canManageAlbum(albumId, session.user.id, userRole);
+  if (!canManage) return { error: "Permission denied" };
 
   await deleteAlbum(albumId);
   revalidatePath("/albums");

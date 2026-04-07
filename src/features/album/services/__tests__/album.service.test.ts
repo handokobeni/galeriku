@@ -27,6 +27,7 @@ import {
   deleteAlbum,
   canAccessAlbum,
   canEditAlbum,
+  canManageAlbum,
   getAlbumMembers,
   addAlbumMember,
   removeAlbumMember,
@@ -46,6 +47,7 @@ describe("Album service", () => {
   it("exports addAlbumMember", () => { expect(typeof addAlbumMember).toBe("function"); });
   it("exports removeAlbumMember", () => { expect(typeof removeAlbumMember).toBe("function"); });
   it("exports updateMemberRole", () => { expect(typeof updateMemberRole).toBe("function"); });
+  it("exports canManageAlbum", () => { expect(typeof canManageAlbum).toBe("function"); });
 });
 
 describe("Album permission logic", () => {
@@ -56,6 +58,11 @@ describe("Album permission logic", () => {
 
   it("canEditAlbum returns true for owner role", async () => {
     const result = await canEditAlbum("album-1", "user-1", "owner");
+    expect(result).toBe(true);
+  });
+
+  it("canManageAlbum returns true for owner role", async () => {
+    const result = await canManageAlbum("album-1", "user-1", "owner");
     expect(result).toBe(true);
   });
 });
@@ -178,5 +185,17 @@ describe("Album service behavior", () => {
     await updateMemberRole("album-1", "user-2", "editor");
     expect(db.update).toHaveBeenCalled();
     expect(db.set).toHaveBeenCalled();
+  });
+
+  it("canManageAlbum returns true for album creator", async () => {
+    dbMock.limit.mockResolvedValue([{ id: "album-1", name: "Test", createdBy: "user-1" }]);
+    const result = await canManageAlbum("album-1", "user-1", "member");
+    expect(result).toBe(true);
+  });
+
+  it("canManageAlbum returns false for editor who is not album creator", async () => {
+    dbMock.limit.mockResolvedValue([{ id: "album-1", name: "Test", createdBy: "user-creator" }]);
+    const result = await canManageAlbum("album-1", "user-editor", "member");
+    expect(result).toBe(false);
   });
 });

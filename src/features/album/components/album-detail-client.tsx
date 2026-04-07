@@ -14,6 +14,7 @@ interface AlbumDetailClientProps {
   mediaItems: MediaWithUploader[];
   members: AlbumMemberInfo[];
   canEdit: boolean;
+  canManage: boolean;
 }
 
 export function AlbumDetailClient({
@@ -22,6 +23,7 @@ export function AlbumDetailClient({
   mediaItems,
   members,
   canEdit,
+  canManage,
 }: AlbumDetailClientProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
@@ -51,7 +53,7 @@ export function AlbumDetailClient({
       <MembersDialog
         albumId={albumId}
         members={members}
-        canEdit={canEdit}
+        canManage={canManage}
         open={membersOpen}
         onOpenChange={setMembersOpen}
       />
