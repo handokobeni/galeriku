@@ -1,13 +1,20 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("@/features/album/actions/manage-members", () => ({
-  inviteMemberAction: vi.fn().mockResolvedValue({ success: true }),
+  inviteMemberByIdAction: vi.fn().mockResolvedValue({ success: true }),
   removeMemberAction: vi.fn().mockResolvedValue({ success: true }),
   updateMemberRoleAction: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-import { inviteMemberAction, removeMemberAction } from "@/features/album/actions/manage-members";
+vi.mock("@/features/user/actions/search-users", () => ({
+  searchUsersAction: vi.fn().mockResolvedValue([
+    { id: "u99", name: "Alice Search", email: "alice@test.com", image: null },
+  ]),
+}));
+
+import { inviteMemberByIdAction, removeMemberAction } from "@/features/album/actions/manage-members";
+import { searchUsersAction } from "@/features/user/actions/search-users";
 import { MembersDialog } from "../members-dialog";
 
 const mockMembers = [
@@ -15,64 +22,125 @@ const mockMembers = [
   { userId: "u2", userName: "Mama", userEmail: "mama@test.com", role: "viewer" as const, invitedAt: new Date() },
 ];
 
+async function typeAndWaitForResults(input: HTMLElement, value: string) {
+  fireEvent.change(input, { target: { value } });
+  // Advance past the 300ms debounce using fake timers
+  await act(async () => {
+    vi.advanceTimersByTime(350);
+  });
+}
+
 describe("MembersDialog", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   it("renders member list when open", () => {
     render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
     expect(screen.getByText("Beni")).toBeInTheDocument();
     expect(screen.getByText("Mama")).toBeInTheDocument();
   });
-  it("shows invite form for editors", () => {
+
+  it("shows search input for editors", () => {
     render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
-    expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
-  });
-  it("hides invite form for viewers", () => {
-    render(<MembersDialog albumId="a1" members={mockMembers} canEdit={false} open={true} onOpenChange={() => {}} />);
-    expect(screen.queryByPlaceholderText(/email/i)).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/search by name or email/i)).toBeInTheDocument();
   });
 
-  it("calls inviteMemberAction on invite button click", async () => {
+  it("hides search input for viewers", () => {
+    render(<MembersDialog albumId="a1" members={mockMembers} canEdit={false} open={true} onOpenChange={() => {}} />);
+    expect(screen.queryByPlaceholderText(/search by name or email/i)).not.toBeInTheDocument();
+  });
+
+  it("calls searchUsersAction when typing in search input", async () => {
     render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
-    const input = screen.getByPlaceholderText(/email/i);
-    fireEvent.change(input, { target: { value: "new@test.com" } });
-    fireEvent.click(screen.getByRole("button", { name: /invite/i }));
+    const input = screen.getByPlaceholderText(/search by name or email/i);
+    await typeAndWaitForResults(input, "alice");
     await waitFor(() => {
-      expect(inviteMemberAction).toHaveBeenCalledWith("a1", "new@test.com");
+      expect(searchUsersAction).toHaveBeenCalledWith("alice");
     });
   });
 
-  it("calls inviteMemberAction on Enter key in email input", async () => {
+  it("shows search results dropdown", async () => {
     render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
-    const input = screen.getByPlaceholderText(/email/i);
-    fireEvent.change(input, { target: { value: "enter@test.com" } });
-    fireEvent.keyDown(input, { key: "Enter" });
+    const input = screen.getByPlaceholderText(/search by name or email/i);
+    await typeAndWaitForResults(input, "alice");
     await waitFor(() => {
-      expect(inviteMemberAction).toHaveBeenCalledWith("a1", "enter@test.com");
+      expect(screen.getByText("Alice Search")).toBeInTheDocument();
+    });
+  });
+
+  it("shows role selector after selecting a user from results", async () => {
+    render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
+    const input = screen.getByPlaceholderText(/search by name or email/i);
+    await typeAndWaitForResults(input, "alice");
+    await waitFor(() => screen.getByText("Alice Search"));
+    fireEvent.click(screen.getByText("Alice Search"));
+    expect(screen.getByRole("combobox")).toBeInTheDocument();
+  });
+
+  it("shows invite button after selecting a user", async () => {
+    render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
+    const input = screen.getByPlaceholderText(/search by name or email/i);
+    await typeAndWaitForResults(input, "alice");
+    await waitFor(() => screen.getByText("Alice Search"));
+    fireEvent.click(screen.getByText("Alice Search"));
+    expect(screen.getByRole("button", { name: /invite as/i })).toBeInTheDocument();
+  });
+
+  it("calls inviteMemberByIdAction on invite button click", async () => {
+    render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
+    const input = screen.getByPlaceholderText(/search by name or email/i);
+    await typeAndWaitForResults(input, "alice");
+    await waitFor(() => screen.getByText("Alice Search"));
+    fireEvent.click(screen.getByText("Alice Search"));
+    fireEvent.click(screen.getByRole("button", { name: /invite as/i }));
+    await waitFor(() => {
+      expect(inviteMemberByIdAction).toHaveBeenCalledWith("a1", "u99", "viewer");
     });
   });
 
   it("calls removeMemberAction when remove button is clicked", async () => {
     render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
-    // Remove buttons are rendered for each member (UserMinus icon buttons)
-    // They appear after the Invite button, so filter by SVG presence
-    const allButtons = screen.getAllByRole("button");
-    // The invite button has text "Invite"; remove buttons have only SVG icons
-    const removeButtons = allButtons.filter(b => !b.textContent?.includes("Invite"));
+    const removeButtons = screen.getAllByRole("button", { name: /remove member/i });
     fireEvent.click(removeButtons[0]);
     await waitFor(() => {
       expect(removeMemberAction).toHaveBeenCalledWith("a1", "u1");
     });
   });
 
-  it("shows error when inviteMemberAction returns error", async () => {
-    vi.mocked(inviteMemberAction).mockResolvedValueOnce({ error: "User not found" });
+  it("shows error when inviteMemberByIdAction returns error", async () => {
+    vi.mocked(inviteMemberByIdAction).mockResolvedValueOnce({ error: "Permission denied" });
     render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
-    const input = screen.getByPlaceholderText(/email/i);
-    fireEvent.change(input, { target: { value: "bad@test.com" } });
-    fireEvent.click(screen.getByRole("button", { name: /invite/i }));
+    const input = screen.getByPlaceholderText(/search by name or email/i);
+    await typeAndWaitForResults(input, "alice");
+    await waitFor(() => screen.getByText("Alice Search"));
+    fireEvent.click(screen.getByText("Alice Search"));
+    fireEvent.click(screen.getByRole("button", { name: /invite as/i }));
     await waitFor(() => {
-      expect(screen.getByText("User not found")).toBeInTheDocument();
+      expect(screen.getByText("Permission denied")).toBeInTheDocument();
     });
+  });
+
+  it("filters existing members from search results", async () => {
+    vi.mocked(searchUsersAction).mockResolvedValueOnce([
+      { id: "u1", name: "Beni", email: "beni@test.com", image: null },
+      { id: "u99", name: "Alice Search", email: "alice@test.com", image: null },
+    ]);
+    render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
+    const input = screen.getByPlaceholderText(/search by name or email/i);
+    await typeAndWaitForResults(input, "b");
+    // Alice is not a member, so she should appear in the dropdown
+    await waitFor(() => {
+      expect(screen.getByText("Alice Search")).toBeInTheDocument();
+    });
+    // "Beni" appears in the members list but should NOT appear in search dropdown
+    // (it would be filtered because u1 is already in mockMembers)
+    const dropdown = screen.getByText("Alice Search").closest("div");
+    expect(dropdown).toBeInTheDocument();
   });
 });

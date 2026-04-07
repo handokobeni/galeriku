@@ -40,6 +40,23 @@ export async function inviteMemberAction(
   return { success: true };
 }
 
+export async function inviteMemberByIdAction(
+  albumId: string,
+  userId: string,
+  role: AlbumMemberRole = "viewer"
+) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) redirect("/login");
+
+  const userRole = ((session.user as Record<string, unknown>).role as string) ?? "member";
+  const canEdit = await canEditAlbum(albumId, session.user.id, userRole);
+  if (!canEdit) return { error: "Permission denied" };
+
+  await addAlbumMember(albumId, userId, role);
+  revalidatePath(`/albums/${albumId}`);
+  return { success: true };
+}
+
 export async function removeMemberAction(albumId: string, userId: string) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
