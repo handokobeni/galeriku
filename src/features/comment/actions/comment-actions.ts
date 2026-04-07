@@ -7,6 +7,7 @@ import { canAccessAlbum } from "@/features/album/services/album.service";
 import { getMediaById } from "@/features/media/services/media.service";
 import { addComment, deleteComment } from "../services/comment.service";
 import { revalidatePath } from "next/cache";
+import { logActivity } from "@/features/activity/services/activity.service";
 
 const commentSchema = z.object({
   content: z.string().min(1, "Comment cannot be empty").max(1000),
@@ -27,6 +28,13 @@ export async function addCommentAction(mediaId: string, content: string) {
   if (!canAccess) return { error: "Permission denied" };
 
   await addComment(mediaId, session.user.id, parsed.data.content);
+  await logActivity({
+    userId: session.user.id,
+    action: "comment_created",
+    entityType: "comment",
+    entityId: null,
+    metadata: { mediaId },
+  });
   revalidatePath(`/media/${mediaId}`);
   return { success: true };
 }

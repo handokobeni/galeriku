@@ -6,6 +6,7 @@ import { z } from "zod";
 import { canEditAlbum } from "@/features/album/services/album.service";
 import { saveMediaBatch } from "../services/media.service";
 import { revalidatePath } from "next/cache";
+import { logActivity } from "@/features/activity/services/activity.service";
 
 const mediaItemSchema = z.object({
   id: z.string().uuid(),
@@ -42,6 +43,13 @@ export async function saveMediaAction(data: z.infer<typeof saveMediaSchema>) {
     await saveMediaBatch(
       items.map((item) => ({ ...item, albumId, uploadedBy: session.user.id }))
     );
+    await logActivity({
+      userId: session.user.id,
+      action: "media_uploaded",
+      entityType: "media",
+      entityId: null,
+      metadata: { albumId, count: items.length },
+    });
   } catch {
     return { error: "Failed to save media metadata" };
   }

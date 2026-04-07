@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createAlbum } from "../services/album.service";
 import { revalidatePath } from "next/cache";
+import { logActivity } from "@/features/activity/services/activity.service";
 
 const createAlbumSchema = z.object({
   name: z.string().min(1, "Album name is required").max(100),
@@ -34,10 +35,18 @@ export async function createAlbumAction(
   }
 
   try {
-    await createAlbum({
+    const newAlbum = await createAlbum({
       name: parsed.data.name,
       description: parsed.data.description,
       createdBy: session.user.id,
+    });
+
+    await logActivity({
+      userId: session.user.id,
+      action: "album_created",
+      entityType: "album",
+      entityId: newAlbum.id,
+      metadata: { name: parsed.data.name },
     });
   } catch (err) {
     console.error("[create-album] Failed:", err);

@@ -14,6 +14,7 @@ import { user } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import type { AlbumMemberRole } from "../types";
+import { logActivity } from "@/features/activity/services/activity.service";
 
 export async function inviteMemberAction(
   albumId: string,
@@ -36,6 +37,13 @@ export async function inviteMemberAction(
   if (!targetUser) return { error: "User not found" };
 
   await addAlbumMember(albumId, targetUser.id, role);
+  await logActivity({
+    userId: session.user.id,
+    action: "member_added",
+    entityType: "album",
+    entityId: albumId,
+    metadata: { addedUserId: targetUser.id },
+  });
   revalidatePath(`/albums/${albumId}`);
   return { success: true };
 }
@@ -53,6 +61,13 @@ export async function inviteMemberByIdAction(
   if (!canManage) return { error: "Permission denied" };
 
   await addAlbumMember(albumId, userId, role);
+  await logActivity({
+    userId: session.user.id,
+    action: "member_added",
+    entityType: "album",
+    entityId: albumId,
+    metadata: { addedUserId: userId, role },
+  });
   revalidatePath(`/albums/${albumId}`);
   return { success: true };
 }
@@ -76,6 +91,13 @@ export async function removeMemberAction(albumId: string, userId: string) {
   if (!canManage) return { error: "Permission denied" };
 
   await removeAlbumMember(albumId, userId);
+  await logActivity({
+    userId: session.user.id,
+    action: "member_removed",
+    entityType: "album",
+    entityId: albumId,
+    metadata: { removedUserId: userId },
+  });
   revalidatePath(`/albums/${albumId}`);
   return { success: true };
 }
