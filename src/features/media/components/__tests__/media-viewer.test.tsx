@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -92,5 +92,12 @@ describe("MediaViewer", () => {
     const tags = [{ id: 1, name: "nature" }];
     render(<MediaViewer {...defaultProps} tags={tags} canEdit={true} />);
     expect(screen.getByTestId("tag-input")).toBeInTheDocument();
+  });
+  it("opens download URL on click", () => {
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+    render(<MediaViewer {...defaultProps} downloadUrl="https://example.com/download" />);
+    fireEvent.click(screen.getByLabelText("Download"));
+    expect(openSpy).toHaveBeenCalledWith("https://example.com/download", "_blank");
+    openSpy.mockRestore();
   });
 });
