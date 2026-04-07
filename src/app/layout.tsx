@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { headers } from "next/headers";
 import { ThemeProvider } from "@/shared/components/theme-provider";
+import { ServiceWorkerRegistration } from "@/shared/components/service-worker-registration";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -13,6 +14,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Galeriku",
   description: "Personal photo & video gallery",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Galeriku",
+  },
 };
 
 export const viewport: Viewport = {
@@ -35,6 +42,7 @@ export default async function RootLayout({
         <ThemeProvider nonce={nonce}>
           {children}
           <Toaster />
+          <ServiceWorkerRegistration />
         </ThemeProvider>
       </body>
     </html>

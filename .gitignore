@@ -71,3 +71,7 @@ temp/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# generated service worker
+public/sw.js
+public/swe-worker-*.js
