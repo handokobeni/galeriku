@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { UserMinus, Loader2, Search } from "lucide-react";
 import { UserAvatar } from "@/shared/components/avatar";
-import { inviteMemberByIdAction, removeMemberAction } from "../actions/manage-members";
+import {
+  inviteMemberByIdAction,
+  removeMemberAction,
+  updateMemberRoleAction,
+} from "../actions/manage-members";
 import { searchUsersAction } from "@/features/user/actions/search-users";
 import type { AlbumMemberInfo, AlbumMemberRole } from "../types";
 
@@ -171,22 +175,41 @@ export function MembersDialog({
         {/* Member list */}
         <div className="space-y-2 max-h-60 overflow-y-auto">
           {members.map((member) => (
-            <div key={member.userId} className="flex items-center gap-3 p-2 rounded-lg">
+            <div key={member.userId} className="flex items-center gap-2 p-2 rounded-lg">
               <UserAvatar name={member.userName} size="sm" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{member.userName}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {member.userEmail} · {member.role}
+                  {member.userEmail}
                 </p>
               </div>
-              {canEdit && (
-                <button
-                  onClick={() => handleRemove(member.userId)}
-                  className="text-muted-foreground hover:text-destructive"
-                  aria-label="Remove member"
-                >
-                  <UserMinus className="size-4" />
-                </button>
+              {canEdit ? (
+                <>
+                  <select
+                    value={member.role}
+                    onChange={(e) =>
+                      updateMemberRoleAction(
+                        albumId,
+                        member.userId,
+                        e.target.value as AlbumMemberRole
+                      )
+                    }
+                    className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+                    aria-label="Member role"
+                  >
+                    <option value="viewer">Viewer</option>
+                    <option value="editor">Editor</option>
+                  </select>
+                  <button
+                    onClick={() => handleRemove(member.userId)}
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label="Remove member"
+                  >
+                    <UserMinus className="size-4" />
+                  </button>
+                </>
+              ) : (
+                <span className="text-xs text-muted-foreground">{member.role}</span>
               )}
             </div>
           ))}

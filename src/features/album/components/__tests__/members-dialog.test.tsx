@@ -13,7 +13,11 @@ vi.mock("@/features/user/actions/search-users", () => ({
   ]),
 }));
 
-import { inviteMemberByIdAction, removeMemberAction } from "@/features/album/actions/manage-members";
+import {
+  inviteMemberByIdAction,
+  removeMemberAction,
+  updateMemberRoleAction,
+} from "@/features/album/actions/manage-members";
 import { searchUsersAction } from "@/features/user/actions/search-users";
 import { MembersDialog } from "../members-dialog";
 
@@ -80,7 +84,28 @@ describe("MembersDialog", () => {
     await typeAndWaitForResults(input, "alice");
     await waitFor(() => screen.getByText("Alice Search"));
     fireEvent.click(screen.getByText("Alice Search"));
-    expect(screen.getByRole("combobox")).toBeInTheDocument();
+    // Each member has a role select (2) + the new invite role select = 3 total
+    expect(screen.getAllByRole("combobox").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("renders editable role select for each member when canEdit", () => {
+    render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
+    const selects = screen.getAllByLabelText("Member role");
+    expect(selects).toHaveLength(2);
+  });
+
+  it("calls updateMemberRoleAction when changing a member role", () => {
+    render(<MembersDialog albumId="a1" members={mockMembers} canEdit={true} open={true} onOpenChange={() => {}} />);
+    const selects = screen.getAllByLabelText("Member role");
+    fireEvent.change(selects[1], { target: { value: "editor" } });
+    expect(updateMemberRoleAction).toHaveBeenCalledWith("a1", "u2", "editor");
+  });
+
+  it("shows read-only role text for viewers", () => {
+    render(<MembersDialog albumId="a1" members={mockMembers} canEdit={false} open={true} onOpenChange={() => {}} />);
+    expect(screen.queryByLabelText("Member role")).not.toBeInTheDocument();
+    expect(screen.getByText("editor")).toBeInTheDocument();
+    expect(screen.getByText("viewer")).toBeInTheDocument();
   });
 
   it("shows invite button after selecting a user", async () => {
