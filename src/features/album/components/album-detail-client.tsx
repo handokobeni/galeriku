@@ -64,7 +64,7 @@ export function AlbumDetailClient({
       />
 
       {canManage && (
-        <div className="px-2 lg:px-4 py-4">
+        <div className="px-2 lg:px-4 py-4 flex justify-end">
           <PublishAlbumDialog albumId={albumId} onPublish={publishAlbumAction} />
         </div>
       )}
