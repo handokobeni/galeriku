@@ -6,13 +6,22 @@ export default async function AdminOverviewPage() {
   const stats = await getAdminStats();
 
   return (
-    <div className="p-4 lg:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Overview</h1>
-        <p className="text-sm text-muted-foreground">System statistics and storage usage</p>
+    <div className="px-6 lg:px-12 py-10 lg:py-14 max-w-[1600px] mx-auto">
+      <header className="mb-12">
+        <p className="label-eyebrow mb-4">✦ 04 — Admin</p>
+        <h1 className="font-display text-5xl lg:text-6xl tracking-tight leading-[0.95] text-foreground">
+          System <em className="italic font-light text-primary">overview</em>
+        </h1>
+        <p className="mt-4 font-editorial text-sm text-muted-foreground italic">
+          Monitor stats, storage and activity across your studio
+        </p>
+        <div className="divider-gold mt-8" />
+      </header>
+
+      <div className="space-y-8">
+        <StatsCards stats={stats} />
+        <StorageBar used={stats.storageUsedBytes} limit={stats.storageLimitBytes} />
       </div>
-      <StatsCards stats={stats} />
-      <StorageBar used={stats.storageUsedBytes} limit={stats.storageLimitBytes} />
     </div>
   );
 }
