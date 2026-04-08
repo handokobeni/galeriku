@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { db } from "@/db";
 import { album, media, galleryGuests, galleryFavorites } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, like, inArray } from "drizzle-orm";
 import { user } from "@/db/schema";
 
 describe("guest-gallery schema", () => {
@@ -10,23 +10,31 @@ describe("guest-gallery schema", () => {
   let mediaId: string;
 
   beforeEach(async () => {
-    await db.delete(galleryFavorites);
-    await db.delete(galleryGuests);
-    await db.delete(media);
-    await db.delete(album);
-    await db.delete(user);
+    // Scoped cleanup: only this test's data (slug prefix sch12-)
+    const ours = await db.select({ id: album.id }).from(album).where(like(album.slug, "sch12-%"));
+    if (ours.length) {
+      const ids = ours.map((x) => x.id);
+      const guestRows = await db.select({ id: galleryGuests.id }).from(galleryGuests).where(inArray(galleryGuests.albumId, ids));
+      if (guestRows.length) {
+        await db.delete(galleryFavorites).where(inArray(galleryFavorites.guestId, guestRows.map((g) => g.id)));
+      }
+      await db.delete(galleryGuests).where(inArray(galleryGuests.albumId, ids));
+      await db.delete(media).where(inArray(media.albumId, ids));
+      await db.delete(album).where(inArray(album.id, ids));
+    }
+    const uniq = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const [u] = await db.insert(user).values({
       id: crypto.randomUUID(),
       name: "Studio",
-      email: `s${Date.now()}@x.io`,
+      email: `sch-${uniq}@x.io`,
       emailVerified: true,
-      username: `studio${Date.now()}`,
+      username: `sch-${uniq}`,
       role: "owner",
     }).returning();
     userId = u.id;
     const [a] = await db.insert(album).values({
       name: "Wedding",
-      slug: "abc12-wedding",
+      slug: "sch12-wedding",
       createdBy: userId,
     }).returning();
     albumId = a.id;
@@ -45,7 +53,7 @@ describe("guest-gallery schema", () => {
 
   it("album has new gallery columns with defaults", async () => {
     const [a] = await db.select().from(album).where(eq(album.id, albumId));
-    expect(a.slug).toBe("abc12-wedding");
+    expect(a.slug).toBe("sch12-wedding");
     expect(a.isPublic).toBe(false);
     expect(a.passwordHash).toBeNull();
     expect(a.downloadPolicy).toBe("none");
@@ -66,7 +74,7 @@ describe("guest-gallery schema", () => {
     }).returning();
     expect(g.displayName).toBe("Tante Sinta");
     await db.insert(galleryFavorites).values({ guestId: g.id, mediaId });
-    const favs = await db.select().from(galleryFavorites);
+    const favs = await db.select().from(galleryFavorites).where(eq(galleryFavorites.guestId, g.id));
     expect(favs).toHaveLength(1);
   });
 
@@ -88,8 +96,8 @@ describe("guest-gallery schema", () => {
     }).returning();
     await db.insert(galleryFavorites).values({ guestId: g.id, mediaId });
     await db.delete(album).where(eq(album.id, albumId));
-    const guests = await db.select().from(galleryGuests);
-    const favs = await db.select().from(galleryFavorites);
+    const guests = await db.select().from(galleryGuests).where(eq(galleryGuests.albumId, albumId));
+    const favs = await db.select().from(galleryFavorites).where(eq(galleryFavorites.guestId, g.id));
     expect(guests).toHaveLength(0);
     expect(favs).toHaveLength(0);
   });

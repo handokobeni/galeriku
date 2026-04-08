@@ -1,17 +1,21 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { db } from "@/db";
 import { user, album, media } from "@/db/schema";
+import { like, inArray } from "drizzle-orm";
 import { getAlbumBySlug } from "./get-album-by-slug";
 
 describe("getAlbumBySlug", () => {
   let userId: string;
   beforeEach(async () => {
-    await db.delete(media);
-    await db.delete(album);
-    await db.delete(user);
+    const scopedAlbums = await db.select({ id: album.id }).from(album).where(like(album.slug, "abc12-%"));
+    if (scopedAlbums.length) {
+      await db.delete(media).where(inArray(media.albumId, scopedAlbums.map((x) => x.id)));
+    }
+    await db.delete(album).where(like(album.slug, "abc12-%"));
+    const uniq = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const [u] = await db.insert(user).values({
-      id: crypto.randomUUID(), name: "S", email: `t${Date.now()}@x.io`,
-      emailVerified: true, username: `studio${Date.now()}`, role: "owner",
+      id: crypto.randomUUID(), name: "S", email: `gabs-${uniq}@x.io`,
+      emailVerified: true, username: `gabs-${uniq}`, role: "owner",
     }).returning();
     userId = u.id;
   });
