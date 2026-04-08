@@ -1,0 +1,47 @@
+import { describe, expect, it, beforeEach } from "vitest";
+import { db } from "@/db";
+import { user, album, media } from "@/db/schema";
+import { getAlbumBySlug } from "./get-album-by-slug";
+
+describe("getAlbumBySlug", () => {
+  let userId: string;
+  beforeEach(async () => {
+    await db.delete(media);
+    await db.delete(album);
+    await db.delete(user);
+    const [u] = await db.insert(user).values({
+      id: crypto.randomUUID(), name: "S", email: `t${Date.now()}@x.io`,
+      emailVerified: true, username: `studio${Date.now()}`, role: "owner",
+    }).returning();
+    userId = u.id;
+  });
+
+  it("returns null when slug not found", async () => {
+    expect(await getAlbumBySlug("nope-x")).toBeNull();
+  });
+
+  it("returns album with media list when found", async () => {
+    const [a] = await db.insert(album).values({
+      name: "Wedding", slug: "abc12-w", isPublic: true, createdBy: userId,
+      publishedAt: new Date(),
+    }).returning();
+    await db.insert(media).values({
+      albumId: a.id, uploadedBy: userId, type: "photo",
+      filename: "x.jpg", r2Key: "x", thumbnailR2Key: "xt",
+      mimeType: "image/jpeg", sizeBytes: 1,
+    });
+    const result = await getAlbumBySlug("abc12-w");
+    expect(result).not.toBeNull();
+    expect(result!.album.name).toBe("Wedding");
+    expect(result!.media).toHaveLength(1);
+  });
+
+  it("returns the album even when not public (caller decides gating)", async () => {
+    await db.insert(album).values({
+      name: "X", slug: "abc12-x", isPublic: false, createdBy: userId,
+    });
+    const result = await getAlbumBySlug("abc12-x");
+    expect(result).not.toBeNull();
+    expect(result!.album.isPublic).toBe(false);
+  });
+});
