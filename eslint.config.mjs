@@ -12,7 +12,19 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "public/sw.js",
+    "public/workbox-*.js",
   ]),
+  {
+    files: ["src/features/guest-gallery/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [
+          { group: ["@/features/auth/*", "@/features/auth"], message: "guest-gallery must not depend on auth feature" },
+        ],
+      }],
+    },
+  },
 ]);
 
 export default eslintConfig;

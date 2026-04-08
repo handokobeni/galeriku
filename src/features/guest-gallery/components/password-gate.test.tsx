@@ -8,7 +8,7 @@ beforeEach(() => {
 
 describe("PasswordGate", () => {
   it("submits password and reloads on success", async () => {
-    (global.fetch as any).mockResolvedValueOnce({ ok: true });
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: true });
     const reload = vi.fn();
     Object.defineProperty(window, "location", { value: { reload }, writable: true });
     render(<PasswordGate slug="abc12-x" />);
@@ -18,7 +18,7 @@ describe("PasswordGate", () => {
   });
 
   it("shows error on 401", async () => {
-    (global.fetch as any).mockResolvedValueOnce({ ok: false, status: 401 });
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: false, status: 401 });
     render(<PasswordGate slug="abc12-x" />);
     fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: "wrong" } });
     fireEvent.click(screen.getByRole("button", { name: /unlock/i }));
@@ -26,7 +26,7 @@ describe("PasswordGate", () => {
   });
 
   it("shows rate limit error on 429", async () => {
-    (global.fetch as any).mockResolvedValueOnce({ ok: false, status: 429 });
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: false, status: 429 });
     render(<PasswordGate slug="abc12-x" />);
     fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: "x" } });
     fireEvent.click(screen.getByRole("button", { name: /unlock/i }));

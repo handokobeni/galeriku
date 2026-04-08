@@ -14,7 +14,7 @@ describe("FavoriteHeart", () => {
   });
 
   it("toggles favorite directly when hasGuest=true", async () => {
-    (global.fetch as any).mockResolvedValueOnce({ ok: true });
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: true });
     render(<FavoriteHeart slug="abc12-x" mediaId="m1" hasGuest />);
     fireEvent.click(screen.getByRole("button", { name: /favorite/i }));
     await waitFor(() =>
@@ -26,7 +26,7 @@ describe("FavoriteHeart", () => {
   });
 
   it("rolls back optimistic update on error", async () => {
-    (global.fetch as any).mockResolvedValueOnce({ ok: false });
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: false });
     render(<FavoriteHeart slug="abc12-x" mediaId="m1" hasGuest initialFavorited={false} />);
     const btn = screen.getByRole("button", { name: /favorite/i });
     fireEvent.click(btn);

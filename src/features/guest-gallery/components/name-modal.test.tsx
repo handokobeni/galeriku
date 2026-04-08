@@ -13,7 +13,7 @@ describe("NameModal", () => {
   });
 
   it("calls onSuccess after registering", async () => {
-    (global.fetch as any).mockResolvedValueOnce({ ok: true, json: async () => ({ guestId: "g1" }) });
+    (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ ok: true, json: async () => ({ guestId: "g1" }) });
     const onSuccess = vi.fn();
     render(<NameModal slug="abc12-x" open onClose={() => {}} onSuccess={onSuccess} />);
     fireEvent.change(screen.getByPlaceholderText(/nama/i), { target: { value: "Sinta" } });

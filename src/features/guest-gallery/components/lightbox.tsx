@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FavoriteHeart } from "./favorite-heart";
 import type { Photo } from "./gallery-grid";
 
@@ -26,10 +26,10 @@ export function Lightbox({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, photos.length]);
 
-  let touchStartX = 0;
-  function onTouchStart(e: React.TouchEvent) { touchStartX = e.touches[0].clientX; }
+  const touchStartX = useRef(0);
+  function onTouchStart(e: React.TouchEvent) { touchStartX.current = e.touches[0].clientX; }
   function onTouchEnd(e: React.TouchEvent) {
-    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
     if (dx > 50) setIndex((i) => Math.max(0, i - 1));
     else if (dx < -50) setIndex((i) => Math.min(photos.length - 1, i + 1));
   }
