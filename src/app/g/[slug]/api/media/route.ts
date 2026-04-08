@@ -23,11 +23,15 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
   const url = new URL(req.url);
   const limit = Math.min(Number(url.searchParams.get("limit") ?? "60"), 100);
   const cursor = url.searchParams.get("cursor");
+  // Offline-cache callers request long-lived URLs (7 days) so service-worker
+  // cached entries don't expire after the default 1h presign window.
+  const offline = url.searchParams.get("offline") === "1";
+  const ttl = offline ? 7 * 24 * 60 * 60 : 60 * 60;
 
   const page = await getAlbumMediaPage({ albumId: found.album.id, limit, cursor });
   const presigned = await batchPresignUrls(
     page.items.map((m) => ({ id: m.id, r2Key: m.r2Key, thumbnailR2Key: m.thumbnailR2Key, variants: m.variants ?? {} })),
-    60 * 60,
+    ttl,
   );
   const items = page.items.map((m) => ({
     id: m.id,

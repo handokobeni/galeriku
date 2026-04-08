@@ -56,4 +56,19 @@ describe("publishAlbum", () => {
     const r = await publishAlbum({ albumId: crypto.randomUUID(), actorId: userId, password: "", downloadPolicy: "none", expiresAt: null });
     expect(r.ok).toBe(false);
   });
+
+  it("re-publish updates settings without regenerating slug", async () => {
+    const first = await publishAlbum({ albumId, actorId: userId, password: "x", downloadPolicy: "none", expiresAt: null });
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    const slugFirst = first.slug;
+
+    const second = await publishAlbum({ albumId, actorId: userId, password: "y", downloadPolicy: "watermarked", expiresAt: null });
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+    expect(second.slug).toBe(slugFirst);
+
+    const [a] = await db.select().from(album).where(eq(album.id, albumId));
+    expect(a.downloadPolicy).toBe("watermarked");
+  });
 });

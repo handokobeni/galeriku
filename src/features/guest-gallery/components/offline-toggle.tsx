@@ -4,12 +4,14 @@ import { useState } from "react";
 export function OfflineToggle({ slug, albumId }: { slug: string; albumId: string }) {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function fetchAllPreviewUrls(): Promise<string[]> {
     const all: string[] = [];
     let cursor: string | null = null;
     while (true) {
-      const params = new URLSearchParams({ limit: "100" });
+      // offline=1 → server signs URLs with a 7-day TTL so the cache stays valid
+      const params = new URLSearchParams({ limit: "100", offline: "1" });
       if (cursor) params.set("cursor", cursor);
       const res = await fetch(`/g/${slug}/api/media?${params.toString()}`);
       if (!res.ok) break;
@@ -26,23 +28,38 @@ export function OfflineToggle({ slug, albumId }: { slug: string; albumId: string
   }
 
   async function saveOffline() {
-    if (typeof caches === "undefined") return;
+    setError(null);
+    if (typeof caches === "undefined") {
+      setError("Offline mode not supported in this browser");
+      return;
+    }
     const urls = await fetchAllPreviewUrls();
     const cache = await caches.open(`gallery-album-${albumId}-v1`);
     setProgress({ done: 0, total: urls.length });
     let i = 0;
     for (const url of urls) {
-      try { await cache.add(url); } catch {}
+      try {
+        await cache.add(url);
+      } catch {}
       i++;
       setProgress({ done: i, total: urls.length });
     }
     setDone(true);
   }
 
-  if (done) return <button disabled className="text-sm text-green-700">Saved offline ✓</button>;
+  if (done) {
+    return (
+      <button disabled className="text-sm text-green-700">
+        Saved offline ✓
+      </button>
+    );
+  }
   return (
-    <button onClick={saveOffline} className="text-sm rounded-md border px-3 py-1">
-      {progress === null ? "Save offline" : `Caching ${progress.done}/${progress.total}...`}
-    </button>
+    <div className="inline-flex flex-col items-end gap-1">
+      <button onClick={saveOffline} className="text-sm rounded-md border px-3 py-1">
+        {progress === null ? "Save offline" : `Caching ${progress.done}/${progress.total}...`}
+      </button>
+      {error && <p className="text-[10px] text-destructive">{error}</p>}
+    </div>
   );
 }

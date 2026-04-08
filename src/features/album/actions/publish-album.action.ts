@@ -27,6 +27,9 @@ export async function publishAlbumAction(input: {
     if (r.reason === "not-found") {
       return { ok: false as const, reason: "Album not found" };
     }
+    if (r.reason === "slug-collision") {
+      return { ok: false as const, reason: "Failed to generate a unique link. Try again." };
+    }
     return { ok: false as const, reason: "Failed to publish" };
   } catch (err) {
     console.error("[publishAlbumAction] error:", err);

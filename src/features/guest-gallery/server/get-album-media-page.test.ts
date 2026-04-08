@@ -56,4 +56,58 @@ describe("getAlbumMediaPage", () => {
     expect(p3.hasMore).toBe(false);
     expect(p3.nextCursor).toBeNull();
   });
+
+  it("paginates correctly when many rows share the same createdAt", async () => {
+    // Create a fresh album so we don't pollute the count tests above.
+    const uniq = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const [u] = await db
+      .insert(user)
+      .values({
+        id: crypto.randomUUID(),
+        name: "s",
+        email: `pgn-bulk-${uniq}@x.io`,
+        emailVerified: true,
+        username: `pgn-bulk-${uniq}`,
+        role: "owner",
+      })
+      .returning();
+    const [a] = await db
+      .insert(album)
+      .values({
+        name: "Bulk",
+        slug: `pgn12-bulk-${uniq.slice(0, 6)}`,
+        isPublic: true,
+        createdBy: u.id,
+      })
+      .returning();
+
+    // Insert 6 rows in one batch — Postgres will give them the same createdAt
+    // (default now() resolves once per statement in pg).
+    const sameTs = new Date();
+    await db.insert(media).values(
+      Array.from({ length: 6 }, (_, i) => ({
+        albumId: a.id,
+        uploadedBy: u.id,
+        type: "photo" as const,
+        filename: `b${i}.jpg`,
+        r2Key: `bk${i}`,
+        thumbnailR2Key: `bkt${i}`,
+        mimeType: "image/jpeg",
+        sizeBytes: 1,
+        createdAt: sameTs,
+      })),
+    );
+
+    const p1 = await getAlbumMediaPage({ albumId: a.id, limit: 3 });
+    expect(p1.items).toHaveLength(3);
+    expect(p1.hasMore).toBe(true);
+
+    const p2 = await getAlbumMediaPage({ albumId: a.id, limit: 3, cursor: p1.nextCursor });
+    expect(p2.items).toHaveLength(3);
+    expect(p2.hasMore).toBe(false);
+
+    // No overlap, no skip — all 6 unique ids accounted for
+    const allIds = new Set([...p1.items.map((m) => m.id), ...p2.items.map((m) => m.id)]);
+    expect(allIds.size).toBe(6);
+  });
 });

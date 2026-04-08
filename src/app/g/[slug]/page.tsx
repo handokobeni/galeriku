@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { galleryFavorites } from "@/db/schema";
-import { getAlbumBySlug } from "@/features/guest-gallery/server/get-album-by-slug";
+import { getAlbumWithCountBySlug } from "@/features/guest-gallery/server/get-album-by-slug";
 import { getAlbumMediaPage } from "@/features/guest-gallery/server/get-album-media-page";
 import { batchPresignUrls } from "@/features/guest-gallery/server/batch-presign-urls";
 import { canViewAlbum } from "@/features/guest-gallery/lib/access-control";
@@ -20,7 +20,7 @@ export default async function GuestGalleryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const found = await getAlbumBySlug(slug);
+  const found = await getAlbumWithCountBySlug(slug);
   if (!found) notFound();
 
   const view = canViewAlbum(found.album);
@@ -36,7 +36,10 @@ export default async function GuestGalleryPage({
     );
   }
 
-  const secret = process.env.GUEST_COOKIE_SECRET!;
+  const secret = process.env.GUEST_COOKIE_SECRET;
+  if (!secret) {
+    throw new Error("GUEST_COOKIE_SECRET not configured");
+  }
   const cookieStore = await cookies();
 
   if (found.album.passwordHash) {
@@ -88,11 +91,11 @@ export default async function GuestGalleryPage({
     <main>
       <AlbumHeader
         title={found.album.name}
-        photoCount={found.media.length}
+        photoCount={found.mediaCount}
         coverUrl={coverUrl}
       />
       <div className="px-4 sm:px-6 py-6 flex flex-wrap gap-3 justify-between items-center">
-        <p className="text-sm text-gray-600">{found.media.length} foto</p>
+        <p className="text-sm text-gray-600">{found.mediaCount} foto</p>
         <div className="flex gap-2">
           <InstallPwaButton />
           <OfflineToggle slug={slug} albumId={found.album.id} />
