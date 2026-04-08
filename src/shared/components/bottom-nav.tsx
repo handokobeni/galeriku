@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Heart, Search, Settings, Plus } from "lucide-react";
+import { LayoutGrid, Heart, Search, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/albums", icon: LayoutGrid, label: "Albums" },
   { href: "/favorites", icon: Heart, label: "Favorites" },
-  { href: "#upload", icon: Plus, label: "Upload", isFab: true },
   { href: "/search", icon: Search, label: "Search" },
-  { href: "/admin", icon: Settings, label: "Settings" },
+  { href: "/admin", icon: Settings, label: "Admin", ownerOnly: true },
 ];
 
 interface BottomNavProps {
@@ -20,44 +19,33 @@ interface BottomNavProps {
 export function BottomNav({ isOwner }: BottomNavProps) {
   const pathname = usePathname();
 
-  const items = isOwner
-    ? navItems
-    : navItems.filter((item) => item.href !== "/admin");
+  const items = isOwner ? navItems : navItems.filter((item) => !item.ownerOnly);
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 lg:hidden">
-      <div className="flex items-center justify-around bg-background/95 backdrop-blur-xl border-t border-border pb-[env(safe-area-inset-bottom)] px-2 pt-1">
-        {items.map((item) => {
-          const isActive = pathname.startsWith(item.href) && item.href !== "#upload";
-
-          if (item.isFab) {
+      <div className="mx-3 mb-3 rounded-2xl border border-border bg-background/95 backdrop-blur-xl shadow-[0_-4px_20px_-8px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around px-2 pt-2 pb-1">
+          {items.map((item) => {
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + "/");
+            const Icon = item.icon;
             return (
-              <button
+              <Link
                 key={item.href}
-                className="flex flex-col items-center -mt-4"
-                aria-label={item.label}
+                href={item.href}
+                className={cn(
+                  "flex flex-col items-center gap-1 py-2 px-4 rounded-xl text-[10px] font-editorial transition-colors",
+                  isActive
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
               >
-                <div className="size-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                  <Plus className="size-5 text-white" />
-                </div>
-              </button>
+                <Icon className="size-5" strokeWidth={isActive ? 2.4 : 1.8} />
+                <span className="tracking-wide">{item.label}</span>
+              </Link>
             );
-          }
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center gap-0.5 py-2 px-3 text-[10px]",
-                isActive ? "text-indigo-500" : "text-muted-foreground"
-              )}
-            >
-              <item.icon className="size-5" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+          })}
+        </div>
       </div>
     </nav>
   );
