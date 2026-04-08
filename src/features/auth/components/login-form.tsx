@@ -5,13 +5,6 @@ import { signIn } from "@/features/auth/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -50,59 +43,68 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   };
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">
-          Galeriku
-        </CardTitle>
-        <CardDescription>Sign in to your account</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {resetSuccess && (
-          <div className="bg-green-500/10 text-green-700 dark:text-green-400 text-sm rounded-lg p-3 mb-4">
-            Password reset successfully. Sign in with your new password.
+    <div>
+      <p className="label-eyebrow mb-3">✦ Sign in</p>
+      <h1 className="font-display text-4xl lg:text-5xl tracking-tight leading-[1] text-foreground">
+        Welcome <em className="italic font-light text-primary">back</em>
+      </h1>
+      <p className="mt-3 font-editorial text-sm text-muted-foreground italic">
+        Sign in to continue your work
+      </p>
+      <div className="divider-gold my-7" />
+
+      {resetSuccess && (
+        <div className="border border-primary/30 bg-primary/5 text-foreground text-sm rounded-md p-3 mb-5 font-editorial">
+          Password reset successfully. Sign in with your new password.
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm rounded-md p-3 font-editorial">
+            {error}
           </div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3">
-              {error}
-            </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="email" className="font-editorial text-xs tracking-wide uppercase text-muted-foreground">
+            Email
+          </Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link href="/forgot-password" className="text-xs text-primary hover:underline">
-                Forgot password?
-              </Link>
-            </div>
-            <Input id="password" name="password" type="password" required />
-          </div>
-
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Signing in..." : "Sign In"}
-          </Button>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-primary hover:underline">
-              Register
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="font-editorial text-xs tracking-wide uppercase text-muted-foreground">
+              Password
+            </Label>
+            <Link
+              href="/forgot-password"
+              className="text-xs font-editorial italic text-primary hover:underline"
+            >
+              Forgot password?
             </Link>
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+          </div>
+          <Input id="password" name="password" type="password" required />
+        </div>
+
+        <Button type="submit" className="w-full font-editorial" disabled={pending}>
+          {pending ? "Signing in..." : "Sign in"}
+        </Button>
+
+        <p className="text-center text-xs font-editorial text-muted-foreground pt-2">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="text-primary italic hover:underline">
+            Register
+          </Link>
+        </p>
+      </form>
+    </div>
   );
 }

@@ -23,6 +23,14 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   serverExternalPackages: ["@node-rs/argon2", "@aws-sdk/client-s3"],
   turbopack: {},
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+  },
   async headers() {
     return [
       {

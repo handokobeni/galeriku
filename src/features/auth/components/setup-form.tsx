@@ -5,13 +5,6 @@ import { signUp } from "@/features/auth/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 
 export function SetupForm() {
@@ -77,17 +70,17 @@ export function SetupForm() {
   };
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">
-          Welcome to Galeriku
-        </CardTitle>
-        <CardDescription>
-          Create your owner account to get started
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div>
+      <p className="label-eyebrow mb-3">✦ Welcome</p>
+      <h1 className="font-display text-4xl lg:text-5xl tracking-tight leading-[1] text-foreground">
+        Set up your <em className="italic font-light text-primary">studio</em>
+      </h1>
+      <p className="mt-3 font-editorial text-sm text-muted-foreground italic">
+        Create the owner account to get started
+      </p>
+      <div className="divider-gold my-7" />
+
+      <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
             <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3">
               {error}
@@ -144,11 +137,10 @@ export function SetupForm() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={pending}>
+          <Button type="submit" className="w-full font-editorial" disabled={pending}>
             {pending ? "Creating account..." : "Create Owner Account"}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

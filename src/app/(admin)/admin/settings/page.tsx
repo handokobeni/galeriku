@@ -10,11 +10,18 @@ export default async function AdminSettingsPage() {
   const settings = await getAllSettings();
 
   return (
-    <div className="p-4 lg:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground">Application configuration</p>
-      </div>
+    <div className="px-6 lg:px-12 py-10 lg:py-14 max-w-[1600px] mx-auto">
+      <header className="mb-12">
+        <p className="label-eyebrow mb-4">✦ 06 — Settings</p>
+        <h1 className="font-display text-5xl lg:text-6xl tracking-tight leading-[0.95] text-foreground">
+          Studio <em className="italic font-light text-primary">settings</em>
+        </h1>
+        <p className="mt-4 font-editorial text-sm text-muted-foreground italic">
+          Application configuration and preferences
+        </p>
+        <div className="divider-gold mt-8" />
+      </header>
+
       <SettingsForm initial={settings} />
     </div>
   );

@@ -24,9 +24,7 @@ describe("RegisterForm", () => {
 
   it("renders registration form heading", () => {
     render(<RegisterForm />);
-    // CardTitle "Create Account" and CardDescription
-    expect(screen.getAllByText("Create Account").length).toBeGreaterThan(0);
-    expect(screen.getByText("Join Galeriku to share memories")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /join the studio/i })).toBeInTheDocument();
   });
 
   it("renders all input fields", () => {

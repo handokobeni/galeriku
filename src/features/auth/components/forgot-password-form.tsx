@@ -5,13 +5,6 @@ import { checkEmailAndRequestReset } from "@/features/auth/actions/forgot-passwo
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Link from "next/link";
 
 export function ForgotPasswordForm() {
@@ -39,66 +32,65 @@ export function ForgotPasswordForm() {
 
   if (success) {
     return (
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Check your email
-          </CardTitle>
-          <CardDescription>
-            We&apos;ve sent password reset instructions to {email}.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link
-            href="/login"
-            className="block text-center text-sm text-primary hover:underline"
-          >
-            Back to login
-          </Link>
-        </CardContent>
-      </Card>
+      <div>
+        <p className="label-eyebrow mb-3">✦ Email sent</p>
+        <h1 className="font-display text-4xl tracking-tight leading-[1] text-foreground">
+          Check your <em className="italic font-light text-primary">inbox</em>
+        </h1>
+        <p className="mt-3 font-editorial text-sm text-muted-foreground italic">
+          We&apos;ve sent password reset instructions to {email}.
+        </p>
+        <div className="divider-gold my-7" />
+        <Link
+          href="/login"
+          className="block text-center text-xs font-editorial italic text-primary hover:underline"
+        >
+          ← Back to sign in
+        </Link>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">
-          Forgot password?
-        </CardTitle>
-        <CardDescription>
-          Enter your email and we&apos;ll send you a reset link
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3">
-              {error}
-            </div>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-            />
+    <div>
+      <p className="label-eyebrow mb-3">✦ Forgot password</p>
+      <h1 className="font-display text-4xl tracking-tight leading-[1] text-foreground">
+        Reset your <em className="italic font-light text-primary">password</em>
+      </h1>
+      <p className="mt-3 font-editorial text-sm text-muted-foreground italic">
+        Enter your email and we&apos;ll send you a reset link
+      </p>
+      <div className="divider-gold my-7" />
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm rounded-md p-3 font-editorial">
+            {error}
           </div>
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Sending..." : "Send reset link"}
-          </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            Remember your password?{" "}
-            <Link href="/login" className="text-primary hover:underline">
-              Sign in
-            </Link>
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+        )}
+        <div className="space-y-2">
+          <Label htmlFor="email" className="font-editorial text-xs tracking-wide uppercase text-muted-foreground">
+            Email
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+        <Button type="submit" className="w-full font-editorial" disabled={pending}>
+          {pending ? "Sending..." : "Send reset link"}
+        </Button>
+        <p className="text-center text-xs font-editorial text-muted-foreground pt-2">
+          Remember your password?{" "}
+          <Link href="/login" className="text-primary italic hover:underline">
+            Sign in
+          </Link>
+        </p>
+      </form>
+    </div>
   );
 }

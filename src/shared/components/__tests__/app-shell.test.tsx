@@ -36,21 +36,22 @@ describe("AppShell", () => {
     expect(screen.getByTestId("child")).toBeInTheDocument();
   });
 
-  it("renders TopNav with app name", () => {
+  it("renders brand mark in sidebar/top bar", () => {
     render(
       <AppShell user={testUser}>
         <div>Content</div>
       </AppShell>
     );
-    expect(screen.getByText("Galeriku")).toBeInTheDocument();
+    // Both desktop Sidebar and MobileTopBar render "Galeriku"
+    expect(screen.getAllByText("Galeriku").length).toBeGreaterThan(0);
   });
 
-  it("renders BottomNav with Upload button", () => {
+  it("renders BottomNav core links", () => {
     render(
       <AppShell user={testUser}>
         <div>Content</div>
       </AppShell>
     );
-    expect(screen.getByLabelText("Upload")).toBeInTheDocument();
+    expect(screen.getAllByText("Albums").length).toBeGreaterThan(0);
   });
 });

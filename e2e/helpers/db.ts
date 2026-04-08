@@ -8,6 +8,8 @@ let sql = createSql();
 
 export async function cleanDatabase() {
   // Delete in dependency order
+  await sql`DELETE FROM gallery_favorite`;
+  await sql`DELETE FROM gallery_guest`;
   await sql`DELETE FROM media_tag`;
   await sql`DELETE FROM tag`;
   await sql`DELETE FROM favorite`;

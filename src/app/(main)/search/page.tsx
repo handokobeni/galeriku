@@ -17,11 +17,18 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const results = q ? await searchMedia(q, session.user.id, userRole) : [];
 
   return (
-    <div className="p-4 lg:p-6">
-      <div className="mb-6">
-        <h1 className="text-xl lg:text-2xl font-bold tracking-tight mb-4">Search</h1>
+    <div className="px-6 lg:px-12 py-10 lg:py-14 max-w-[1600px] mx-auto">
+      <header className="mb-10 lg:mb-14">
+        <p className="label-eyebrow mb-4">✦ 03 — Search</p>
+        <h1 className="font-display text-5xl lg:text-7xl tracking-tight leading-[0.95] text-foreground">
+          Find a <em className="italic font-light text-primary">moment</em>
+        </h1>
+        <p className="mt-4 font-editorial text-sm text-muted-foreground italic">
+          Search across all your photos and videos
+        </p>
+        <div className="divider-gold mt-8 mb-8" />
         <SearchBar />
-      </div>
+      </header>
       {q && <SearchResults results={results} query={q} />}
     </div>
   );

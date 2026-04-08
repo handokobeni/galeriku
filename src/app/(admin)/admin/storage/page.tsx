@@ -23,40 +23,61 @@ export default async function AdminStoragePage() {
   );
 
   return (
-    <div className="p-4 lg:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Storage</h1>
-        <p className="text-sm text-muted-foreground">R2 storage usage breakdown</p>
-      </div>
+    <div className="px-6 lg:px-12 py-10 lg:py-14 max-w-[1600px] mx-auto">
+      <header className="mb-12">
+        <p className="label-eyebrow mb-4">✦ 04 — Storage</p>
+        <h1 className="font-display text-5xl lg:text-6xl tracking-tight leading-[0.95] text-foreground">
+          R2 <em className="italic font-light text-primary">storage</em>
+        </h1>
+        <p className="mt-4 font-editorial text-sm text-muted-foreground italic">
+          Bandwidth-free Cloudflare R2 — usage breakdown per album
+        </p>
+        <div className="divider-gold mt-8" />
+      </header>
 
-      <StorageBar used={stats.storageUsedBytes} limit={stats.storageLimitBytes} />
+      <div className="space-y-10">
+        <StorageBar used={stats.storageUsedBytes} limit={stats.storageLimitBytes} />
 
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
-          <h3 className="text-sm font-semibold">Per Album</h3>
-        </div>
-        <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[500px]">
-          <thead className="bg-muted/30">
-            <tr>
-              <th className="text-left px-4 py-2 font-medium">Album</th>
-              <th className="text-left px-4 py-2 font-medium">Creator</th>
-              <th className="text-right px-4 py-2 font-medium">Media</th>
-              <th className="text-right px-4 py-2 font-medium">Storage</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedAlbums.map((a) => (
-              <tr key={a.id} className="border-t border-border">
-                <td className="px-4 py-2">{a.name}</td>
-                <td className="px-4 py-2 text-muted-foreground">{a.creatorName}</td>
-                <td className="px-4 py-2 text-right">{a.mediaCount}</td>
-                <td className="px-4 py-2 text-right">{formatBytes(Number(a.storageBytes))}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        </div>
+        <section>
+          <p className="label-eyebrow mb-4">Per album</p>
+          <div className="border border-border bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[500px] font-editorial">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left px-5 py-3 font-medium text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Album
+                    </th>
+                    <th className="text-left px-5 py-3 font-medium text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Creator
+                    </th>
+                    <th className="text-right px-5 py-3 font-medium text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Media
+                    </th>
+                    <th className="text-right px-5 py-3 font-medium text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Storage
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedAlbums.map((a) => (
+                    <tr
+                      key={a.id}
+                      className="border-t border-border/60 hover:bg-secondary/30 transition-colors"
+                    >
+                      <td className="px-5 py-3 font-display text-base">{a.name}</td>
+                      <td className="px-5 py-3 text-muted-foreground italic">{a.creatorName}</td>
+                      <td className="px-5 py-3 text-right font-mono text-xs">{a.mediaCount}</td>
+                      <td className="px-5 py-3 text-right font-mono text-xs">
+                        {formatBytes(Number(a.storageBytes))}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

@@ -151,6 +151,11 @@ R2_PUBLIC_DOMAIN=https://<account-id>.r2.cloudflarestorage.com
 # Resend (for password reset emails)
 RESEND_API_KEY=<your-resend-api-key>
 RESEND_FROM_EMAIL=onboarding@resend.dev
+
+# Guest gallery (/g/[slug]) cookie signing
+# Random 32+ byte string used to sign guest gallery cookies (HMAC-SHA256).
+# Generate with: openssl rand -base64 48
+GUEST_COOKIE_SECRET=<random-32-byte-string>
 ```
 
 ## How it works

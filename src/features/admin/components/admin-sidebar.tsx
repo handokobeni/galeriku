@@ -14,12 +14,12 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/admin", icon: LayoutDashboard, label: "Overview" },
-  { href: "/admin/users", icon: Users, label: "Users" },
-  { href: "/admin/albums", icon: FolderOpen, label: "Albums" },
-  { href: "/admin/storage", icon: HardDrive, label: "Storage" },
-  { href: "/admin/activity", icon: Activity, label: "Activity" },
-  { href: "/admin/settings", icon: Settings, label: "Settings" },
+  { href: "/admin", icon: LayoutDashboard, label: "Overview", num: "01" },
+  { href: "/admin/users", icon: Users, label: "Users", num: "02" },
+  { href: "/admin/albums", icon: FolderOpen, label: "Albums", num: "03" },
+  { href: "/admin/storage", icon: HardDrive, label: "Storage", num: "04" },
+  { href: "/admin/activity", icon: Activity, label: "Activity", num: "05" },
+  { href: "/admin/settings", icon: Settings, label: "Settings", num: "06" },
 ];
 
 export function AdminSidebar() {
@@ -30,72 +30,105 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile: top bar with back link + bottom tab bar */}
-      <header className="lg:hidden sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3">
+      {/* Mobile top bar */}
+      <header className="lg:hidden sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border/60">
+        <div className="flex items-center justify-between px-5 py-4">
           <Link
             href="/albums"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-2 text-[11px] font-editorial tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors group"
           >
-            <ArrowLeft className="size-4" />
+            <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-0.5" />
             Back to app
           </Link>
-          <h2 className="text-base font-bold tracking-tight">Admin</h2>
+          <h2 className="font-display text-xl tracking-tight">Admin</h2>
         </div>
       </header>
 
+      {/* Mobile bottom horizontal nav */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-50">
-        <div className="flex items-center justify-around bg-background/95 backdrop-blur-xl border-t border-border pb-[env(safe-area-inset-bottom)] px-1 pt-1 overflow-x-auto">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex flex-col items-center gap-0.5 py-2 px-2 text-[10px] flex-shrink-0",
-                  active ? "text-primary font-medium" : "text-muted-foreground"
-                )}
-              >
-                <item.icon className="size-5" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+        <div className="mx-3 mb-3 rounded-2xl border border-border bg-background/95 backdrop-blur-xl shadow-[0_-4px_20px_-8px_rgba(0,0,0,0.15)] pb-[env(safe-area-inset-bottom)]">
+          <div className="flex items-center justify-around px-1 pt-2 pb-1 overflow-x-auto">
+            {navItems.map((item) => {
+              const active = isActive(item.href);
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex flex-col items-center gap-1 py-2 px-3 rounded-xl text-[10px] font-editorial flex-shrink-0 transition-colors",
+                    active
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <Icon className="size-5" strokeWidth={active ? 2.4 : 1.8} />
+                  <span className="tracking-wide">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </nav>
 
-      {/* Desktop: left sidebar */}
-      <aside className="hidden lg:flex w-56 border-r border-border bg-card flex-col">
-        <div className="px-4 py-4 border-b border-border">
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-border bg-card/40 backdrop-blur-sm sticky top-0 h-svh">
+        <div className="px-7 pt-8 pb-8 border-b border-border/60">
           <Link
             href="/albums"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-2 text-[11px] font-editorial tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors group"
           >
-            <ArrowLeft className="size-4" />
+            <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-0.5" />
             Back to app
           </Link>
-          <h2 className="mt-3 text-lg font-bold tracking-tight">Admin</h2>
+          <h2 className="font-display text-3xl tracking-tight leading-none mt-4">
+            Admin
+          </h2>
+          <p className="font-editorial text-[11px] tracking-[0.18em] uppercase text-muted-foreground mt-2">
+            Studio · Console
+          </p>
         </div>
-        <nav className="flex-1 p-2 space-y-1">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                  active
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <item.icon className="size-4" />
-                {item.label}
-              </Link>
-            );
-          })}
+
+        <nav className="flex-1 px-4 py-6">
+          <p className="label-eyebrow px-3 mb-3">✦ Modules</p>
+          <ul className="space-y-0.5">
+            {navItems.map((item) => {
+              const active = isActive(item.href);
+              const Icon = item.icon;
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-editorial transition-all relative",
+                      active
+                        ? "bg-primary/10 text-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary/60",
+                    )}
+                  >
+                    {active && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2px] bg-primary rounded-r" />
+                    )}
+                    <Icon
+                      className={cn(
+                        "size-4 transition-colors",
+                        active && "text-primary",
+                      )}
+                    />
+                    <span className="flex-1">{item.label}</span>
+                    <span
+                      className={cn(
+                        "font-mono text-[10px] tracking-wider",
+                        active ? "text-primary" : "text-muted-foreground/50",
+                      )}
+                    >
+                      {item.num}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </nav>
       </aside>
     </>

@@ -6,3 +6,4 @@ export * from "./favorite";
 export * from "./tag";
 export * from "./app-settings";
 export * from "./activity-log";
+export * from "./guest-gallery";

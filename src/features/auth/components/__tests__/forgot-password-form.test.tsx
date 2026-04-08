@@ -44,7 +44,7 @@ describe("ForgotPasswordForm", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /send reset link/i }));
     await waitFor(() => {
-      expect(screen.getByText(/check your email/i)).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /check your inbox/i })).toBeInTheDocument();
     });
   });
 

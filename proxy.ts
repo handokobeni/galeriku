@@ -11,7 +11,7 @@ export function proxy(request: NextRequest) {
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ""};
     style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`};
     font-src 'self' https://fonts.gstatic.com;
-    img-src 'self' blob: data: ${R2_DOMAIN};
+    img-src 'self' blob: data: ${R2_DOMAIN} https://images.unsplash.com;
     media-src 'self' blob: ${R2_DOMAIN};
     connect-src 'self' ${R2_DOMAIN};
     object-src 'none';

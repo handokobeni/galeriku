@@ -5,13 +5,6 @@ import { signUp } from "@/features/auth/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -69,17 +62,19 @@ export function RegisterForm() {
   };
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">
-          Create Account
-        </CardTitle>
-        <CardDescription>Join Galeriku to share memories</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div>
+      <p className="label-eyebrow mb-3">✦ Register</p>
+      <h1 className="font-display text-4xl lg:text-5xl tracking-tight leading-[1] text-foreground">
+        Join the <em className="italic font-light text-primary">studio</em>
+      </h1>
+      <p className="mt-3 font-editorial text-sm text-muted-foreground italic">
+        Create your photographer account
+      </p>
+      <div className="divider-gold my-7" />
+
+      <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3">
+            <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm rounded-md p-3 font-editorial">
               {error}
             </div>
           )}
@@ -138,14 +133,13 @@ export function RegisterForm() {
             {pending ? "Creating account..." : "Create Account"}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-xs font-editorial text-muted-foreground pt-2">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="text-primary italic hover:underline">
               Sign in
             </Link>
           </p>
         </form>
-      </CardContent>
-    </Card>
+    </div>
   );
 }

@@ -6,13 +6,6 @@ import { authClient } from "@/features/auth/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import Link from "next/link";
 
 interface ResetPasswordFormProps {
@@ -67,75 +60,78 @@ export function ResetPasswordForm({
 
   if (!token && !initialError) {
     return (
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Invalid link
-          </CardTitle>
-          <CardDescription>
-            This reset link is missing a token. Please request a new reset email.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link
-            href="/forgot-password"
-            className="block text-center text-sm text-primary hover:underline"
-          >
-            Request new reset link
-          </Link>
-        </CardContent>
-      </Card>
+      <div>
+        <p className="label-eyebrow mb-3">✦ Invalid link</p>
+        <h1 className="font-display text-4xl tracking-tight leading-[1] text-foreground">
+          Link <em className="italic font-light text-primary">expired</em>
+        </h1>
+        <p className="mt-3 font-editorial text-sm text-muted-foreground italic">
+          This reset link is missing a token. Please request a new reset email.
+        </p>
+        <div className="divider-gold my-7" />
+        <Link
+          href="/forgot-password"
+          className="block text-center text-xs font-editorial italic text-primary hover:underline"
+        >
+          Request new reset link →
+        </Link>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold tracking-tight">
-          Reset password
-        </CardTitle>
-        <CardDescription>Choose a new password for your account</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="bg-destructive/10 text-destructive text-sm rounded-lg p-3">
-              {error}
-            </div>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="password">New Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min. 8 characters"
-              required
-              minLength={8}
-            />
+    <div>
+      <p className="label-eyebrow mb-3">✦ Reset password</p>
+      <h1 className="font-display text-4xl tracking-tight leading-[1] text-foreground">
+        Choose a new <em className="italic font-light text-primary">password</em>
+      </h1>
+      <p className="mt-3 font-editorial text-sm text-muted-foreground italic">
+        Pick a strong one — minimum 8 characters
+      </p>
+      <div className="divider-gold my-7" />
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {error && (
+          <div className="border border-destructive/40 bg-destructive/5 text-destructive text-sm rounded-md p-3 font-editorial">
+            {error}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm">Confirm Password</Label>
-            <Input
-              id="confirm"
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              required
-              minLength={8}
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Resetting..." : "Reset Password"}
-          </Button>
-          <p className="text-center text-sm text-muted-foreground">
-            <Link href="/login" className="text-primary hover:underline">
-              Back to login
-            </Link>
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+        )}
+        <div className="space-y-2">
+          <Label htmlFor="password" className="font-editorial text-xs tracking-wide uppercase text-muted-foreground">
+            New Password
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Min. 8 characters"
+            required
+            minLength={8}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirm" className="font-editorial text-xs tracking-wide uppercase text-muted-foreground">
+            Confirm Password
+          </Label>
+          <Input
+            id="confirm"
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            required
+            minLength={8}
+          />
+        </div>
+        <Button type="submit" className="w-full font-editorial" disabled={pending}>
+          {pending ? "Resetting..." : "Reset password"}
+        </Button>
+        <p className="text-center text-xs font-editorial text-muted-foreground pt-2">
+          <Link href="/login" className="text-primary italic hover:underline">
+            ← Back to sign in
+          </Link>
+        </p>
+      </form>
+    </div>
   );
 }

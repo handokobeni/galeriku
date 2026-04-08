@@ -10,11 +10,19 @@ export default async function AdminAlbumsPage() {
   const albums = await getAllAlbumsForAdmin();
 
   return (
-    <div className="p-4 lg:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl lg:text-2xl font-bold tracking-tight">All Albums</h1>
-        <p className="text-sm text-muted-foreground">{albums.length} total albums</p>
-      </div>
+    <div className="px-6 lg:px-12 py-10 lg:py-14 max-w-[1600px] mx-auto">
+      <header className="mb-12">
+        <p className="label-eyebrow mb-4">✦ 03 — Albums</p>
+        <h1 className="font-display text-5xl lg:text-6xl tracking-tight leading-[0.95] text-foreground">
+          All <em className="italic font-light text-primary">collections</em>
+        </h1>
+        <p className="mt-4 font-editorial text-sm text-muted-foreground">
+          <span className="font-mono text-foreground">{albums.length}</span>{" "}
+          <span className="italic">{albums.length === 1 ? "album" : "albums"} across the studio</span>
+        </p>
+        <div className="divider-gold mt-8" />
+      </header>
+
       <AlbumTable albums={albums} />
     </div>
   );
