@@ -34,11 +34,27 @@ export function CreateAlbumDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <button className="aspect-[4/3] rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors" />
+          <button className="group block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md" />
         }
       >
-        <Plus className="size-6" />
-        <span className="text-xs">New Album</span>
+        <article>
+          <div className="relative aspect-[4/5] border border-dashed border-border/70 group-hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-3 text-muted-foreground group-hover:text-primary bg-secondary/30">
+            <div className="size-12 rounded-full border border-current flex items-center justify-center group-hover:rotate-90 transition-transform duration-500">
+              <Plus className="size-5" strokeWidth={1.5} />
+            </div>
+            <span className="font-editorial text-[11px] tracking-[0.18em] uppercase">
+              New album
+            </span>
+          </div>
+          <div className="pt-4 pb-2 px-1">
+            <h3 className="font-display text-xl leading-tight tracking-tight text-muted-foreground/70 group-hover:text-foreground italic transition-colors">
+              Create a new collection
+            </h3>
+            <p className="mt-2 text-[11px] font-editorial text-muted-foreground/60">
+              Start a fresh album for your next session
+            </p>
+          </div>
+        </article>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
