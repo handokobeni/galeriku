@@ -33,7 +33,7 @@ export function PublishAlbumDialog({
     password: string;
     downloadPolicy: DownloadPolicy;
     expiresAt: string | null;
-  }) => Promise<{ ok: boolean; slug?: string }>;
+  }) => Promise<{ ok: boolean; slug?: string; reason?: string }>;
 }) {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -56,7 +56,7 @@ export function PublishAlbumDialog({
       if (r.ok && r.slug) {
         setLink(`${window.location.origin}/g/${r.slug}`);
       } else {
-        setError("Gagal publish album. Coba lagi.");
+        setError(r.reason || "Gagal publish album. Coba lagi.");
       }
     });
   }

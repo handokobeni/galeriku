@@ -18,15 +18,27 @@ export async function unlockAlbum(input: {
   if (!secret) throw new Error("GUEST_COOKIE_SECRET not configured");
 
   const rateKey = `unlock:${input.clientKey}:${input.slug}`;
-  if (!unlockLimiter.check(rateKey)) return { ok: false, reason: "rate-limited" };
+  // Check (without incrementing) — only count failed attempts below.
+  if (!unlockLimiter.isAllowed(rateKey)) {
+    return { ok: false, reason: "rate-limited" };
+  }
 
   const result = await getAlbumBySlug(input.slug);
-  if (!result || !result.album.isPublic) return { ok: false, reason: "not-found" };
+  if (!result || !result.album.isPublic) {
+    return { ok: false, reason: "not-found" };
+  }
 
   if (result.album.passwordHash) {
     const ok = await verify(result.album.passwordHash, input.password);
-    if (!ok) return { ok: false, reason: "wrong-password" };
+    if (!ok) {
+      // Count this failed attempt
+      unlockLimiter.hit(rateKey);
+      return { ok: false, reason: "wrong-password" };
+    }
   }
+
+  // Successful unlock — clear the failure bucket so legit retries don't accumulate
+  unlockLimiter.reset(rateKey);
 
   const token = await signCookie(
     { albumId: result.album.id, exp: Date.now() + TWENTY_FOUR_HOURS },
