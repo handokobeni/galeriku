@@ -11,11 +11,18 @@ export default async function AdminActivityPage() {
   const activities = (await getRecentActivity(100)) as unknown as ActivityLogEntry[];
 
   return (
-    <div className="p-4 lg:p-6 space-y-6">
-      <div>
-        <h1 className="text-xl lg:text-2xl font-bold tracking-tight">Activity Log</h1>
-        <p className="text-sm text-muted-foreground">Recent system events</p>
-      </div>
+    <div className="px-6 lg:px-12 py-10 lg:py-14 max-w-[1600px] mx-auto">
+      <header className="mb-12">
+        <p className="label-eyebrow mb-4">✦ 05 — Activity</p>
+        <h1 className="font-display text-5xl lg:text-6xl tracking-tight leading-[0.95] text-foreground">
+          Recent <em className="italic font-light text-primary">events</em>
+        </h1>
+        <p className="mt-4 font-editorial text-sm text-muted-foreground italic">
+          Last 100 system events across the studio
+        </p>
+        <div className="divider-gold mt-8" />
+      </header>
+
       <ActivityFeed activities={activities} />
     </div>
   );
