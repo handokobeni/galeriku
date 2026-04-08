@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, uuid, primaryKey, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, primaryKey, index, boolean } from "drizzle-orm/pg-core";
 import { user } from "./user";
 
 export const album = pgTable("album", {
@@ -10,6 +10,14 @@ export const album = pgTable("album", {
   createdBy: uuid("created_by")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  slug: text("slug").unique(),
+  isPublic: boolean("is_public").default(false).notNull(),
+  passwordHash: text("password_hash"),
+  downloadPolicy: text("download_policy", { enum: ["none", "watermarked", "clean"] })
+    .default("none")
+    .notNull(),
+  publishedAt: timestamp("published_at"),
+  expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
