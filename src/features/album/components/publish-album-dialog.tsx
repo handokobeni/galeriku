@@ -12,6 +12,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Share2, Copy, Check } from "lucide-react";
 
 type DownloadPolicy = "none" | "watermarked" | "clean";
@@ -137,16 +144,19 @@ export function PublishAlbumDialog({
 
             <div className="space-y-2">
               <Label htmlFor="publish-policy">Download policy</Label>
-              <select
-                id="publish-policy"
+              <Select
                 value={policy}
-                onChange={(e) => setPolicy(e.target.value as DownloadPolicy)}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                onValueChange={(v) => setPolicy(v as DownloadPolicy)}
               >
-                <option value="none">No download — klien hanya bisa lihat</option>
-                <option value="watermarked">Watermarked — download dengan watermark</option>
-                <option value="clean">Clean — download kualitas penuh</option>
-              </select>
+                <SelectTrigger id="publish-policy" className="w-full">
+                  <SelectValue placeholder="Pilih policy" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No download — klien hanya bisa lihat</SelectItem>
+                  <SelectItem value="watermarked">Watermarked — download dengan watermark</SelectItem>
+                  <SelectItem value="clean">Clean — download kualitas penuh</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
