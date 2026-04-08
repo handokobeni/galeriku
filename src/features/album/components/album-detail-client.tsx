@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { AlbumHeader } from "./album-header";
 import { MembersDialog } from "./members-dialog";
+import { PublishAlbumDialog } from "./publish-album-dialog";
+import { publishAlbumAction } from "../actions/publish-album.action";
 import { MediaGrid } from "@/features/media/components/media-grid";
 import { UploadDialog } from "@/features/media/components/upload-dialog";
 import type { MediaWithUploader } from "@/features/media/types";
@@ -60,6 +62,12 @@ export function AlbumDetailClient({
         open={membersOpen}
         onOpenChange={setMembersOpen}
       />
+
+      {canManage && (
+        <div className="px-2 lg:px-4 py-4">
+          <PublishAlbumDialog albumId={albumId} onPublish={publishAlbumAction} />
+        </div>
+      )}
     </div>
   );
 }
