@@ -75,6 +75,12 @@
 ### Task 14 — Components: gallery-grid, lightbox
 - Create + test for each
 
+### Task 14b — Pagination + infinite scroll
+- Create: `src/features/guest-gallery/server/get-album-media-page.ts` + test
+- Create: `src/app/g/[slug]/api/media/route.ts` + test
+- Modify: `src/features/guest-gallery/components/gallery-grid.tsx` (infinite scroll)
+- Modify: `src/app/g/[slug]/page.tsx` (load only first page, pass cursor)
+
 ### Task 15 — Components: install-pwa-button, offline-toggle, album-header
 - Create + test for each
 
@@ -2166,7 +2172,7 @@ import { useState } from "react";
 import { FavoriteHeart } from "./favorite-heart";
 import { Lightbox } from "./lightbox";
 
-export type Photo = { id: string; thumbUrl: string; previewUrl: string };
+export type Photo = { id: string; thumbUrl: string; previewUrl: string; width: number | null; height: number | null };
 
 export function GalleryGrid({
   slug, photos, hasGuest, downloadPolicy, favorites,
@@ -2192,6 +2198,9 @@ export function GalleryGrid({
               src={p.thumbUrl}
               alt=""
               loading="lazy"
+              decoding="async"
+              width={p.width ?? 400}
+              height={p.height ?? 400}
               onClick={() => setOpenIndex(i)}
               className="h-full w-full object-cover cursor-pointer"
             />
@@ -2386,6 +2395,468 @@ git commit -m "feat(guest-gallery): add grid, lightbox, download stub"
 
 ---
 
+## Task 14b: Pagination + infinite scroll
+
+**Goal:** RSC initial render hanya load 60 foto pertama. Client fetch batch berikutnya via cursor saat IntersectionObserver trigger di akhir grid. Cegah payload HTML jumbo + presigned URL waste untuk wedding album 500+ foto.
+
+**Files:**
+- Create: `src/features/guest-gallery/server/get-album-media-page.ts` + test
+- Create: `src/app/g/[slug]/api/media/route.ts` + test
+- Modify: `src/features/guest-gallery/components/gallery-grid.tsx` (add infinite scroll)
+- Modify: `src/app/g/[slug]/page.tsx` (load only first page initially)
+
+- [ ] **Step 1: Write the failing test for pagination server function**
+
+`src/features/guest-gallery/server/get-album-media-page.test.ts`:
+
+```ts
+import { describe, expect, it, beforeEach } from "vitest";
+import { db } from "@/db";
+import { user, album, media } from "@/db/schema";
+import { getAlbumMediaPage } from "./get-album-media-page";
+
+describe("getAlbumMediaPage", () => {
+  let userId: string;
+  let albumId: string;
+
+  beforeEach(async () => {
+    await db.delete(media);
+    await db.delete(album);
+    await db.delete(user);
+    const [u] = await db.insert(user).values({
+      id: crypto.randomUUID(), name: "s", email: `pg${Date.now()}@x.io`,
+      emailVerified: true, role: "owner",
+    }).returning();
+    userId = u.id;
+    const [a] = await db.insert(album).values({
+      name: "X", slug: "abc12-x", isPublic: true, createdBy: userId,
+    }).returning();
+    albumId = a.id;
+    // Insert 25 media in deterministic createdAt order
+    for (let i = 0; i < 25; i++) {
+      await db.insert(media).values({
+        albumId, uploadedBy: userId, type: "photo",
+        filename: `f${i}.jpg`, r2Key: `k${i}`, thumbnailR2Key: `kt${i}`,
+        mimeType: "image/jpeg", sizeBytes: 1,
+      });
+      await new Promise((r) => setTimeout(r, 2)); // ensure distinct createdAt
+    }
+  });
+
+  it("returns first page of given size with hasMore=true", async () => {
+    const r = await getAlbumMediaPage({ albumId, limit: 10 });
+    expect(r.items).toHaveLength(10);
+    expect(r.hasMore).toBe(true);
+    expect(r.nextCursor).not.toBeNull();
+  });
+
+  it("returns next page using cursor", async () => {
+    const first = await getAlbumMediaPage({ albumId, limit: 10 });
+    const second = await getAlbumMediaPage({ albumId, limit: 10, cursor: first.nextCursor });
+    expect(second.items).toHaveLength(10);
+    // No overlap with first page
+    const firstIds = new Set(first.items.map((m) => m.id));
+    expect(second.items.every((m) => !firstIds.has(m.id))).toBe(true);
+  });
+
+  it("returns final page with hasMore=false", async () => {
+    const p1 = await getAlbumMediaPage({ albumId, limit: 10 });
+    const p2 = await getAlbumMediaPage({ albumId, limit: 10, cursor: p1.nextCursor });
+    const p3 = await getAlbumMediaPage({ albumId, limit: 10, cursor: p2.nextCursor });
+    expect(p3.items).toHaveLength(5);
+    expect(p3.hasMore).toBe(false);
+    expect(p3.nextCursor).toBeNull();
+  });
+});
+```
+
+- [ ] **Step 2: Run → FAIL**
+
+- [ ] **Step 3: Implement `get-album-media-page.ts`**
+
+```ts
+import { db } from "@/db";
+import { media } from "@/db/schema";
+import { and, eq, lt, desc } from "drizzle-orm";
+
+export type MediaPage = {
+  items: (typeof media.$inferSelect)[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
+// Cursor format: ISO timestamp of the last item's createdAt.
+// Order: createdAt DESC (newest first).
+export async function getAlbumMediaPage(input: {
+  albumId: string;
+  limit: number;
+  cursor?: string | null;
+}): Promise<MediaPage> {
+  const limit = Math.min(Math.max(input.limit, 1), 100);
+  const where = input.cursor
+    ? and(eq(media.albumId, input.albumId), lt(media.createdAt, new Date(input.cursor)))
+    : eq(media.albumId, input.albumId);
+
+  const items = await db
+    .select()
+    .from(media)
+    .where(where)
+    .orderBy(desc(media.createdAt))
+    .limit(limit + 1);
+
+  const hasMore = items.length > limit;
+  const sliced = hasMore ? items.slice(0, limit) : items;
+  const nextCursor = hasMore ? sliced[sliced.length - 1].createdAt.toISOString() : null;
+  return { items: sliced, nextCursor, hasMore };
+}
+```
+
+- [ ] **Step 4: Run → PASS**
+
+- [ ] **Step 5: Write the failing test for media API route**
+
+`src/app/g/[slug]/api/media/route.test.ts`:
+
+```ts
+import { describe, expect, it, beforeEach } from "vitest";
+import { db } from "@/db";
+import { user, album, media } from "@/db/schema";
+import { signCookie } from "@/features/guest-gallery/lib/cookies";
+import { GET } from "./route";
+
+const SECRET = "test-secret-32-bytes-long-12345678";
+
+describe("GET /g/[slug]/api/media", () => {
+  let albumId: string;
+  beforeEach(async () => {
+    process.env.GUEST_COOKIE_SECRET = SECRET;
+    await db.delete(media);
+    await db.delete(album);
+    await db.delete(user);
+    const [u] = await db.insert(user).values({
+      id: crypto.randomUUID(), name: "s", email: `mr${Date.now()}@x.io`,
+      emailVerified: true, role: "owner",
+    }).returning();
+    const [a] = await db.insert(album).values({
+      name: "X", slug: "abc12-x", isPublic: true, createdBy: u.id,
+    }).returning();
+    albumId = a.id;
+    for (let i = 0; i < 5; i++) {
+      await db.insert(media).values({
+        albumId, uploadedBy: u.id, type: "photo",
+        filename: `f${i}.jpg`, r2Key: `k${i}`, thumbnailR2Key: `kt${i}`,
+        mimeType: "image/jpeg", sizeBytes: 1,
+      });
+    }
+  });
+
+  it("returns 401 for password album without unlock cookie", async () => {
+    // Force album to require password
+    const { hash } = await import("@node-rs/argon2");
+    await db.update(album).set({ passwordHash: await hash("x") }).where(eq(album.id, albumId));
+    const req = new Request("http://localhost/g/abc12-x/api/media?limit=2");
+    const res = await GET(req as any, { params: Promise.resolve({ slug: "abc12-x" }) });
+    expect(res.status).toBe(401);
+  });
+
+  it("returns first page with presigned URLs", async () => {
+    const tok = await signCookie({ albumId, exp: Date.now() + 60_000 }, SECRET);
+    const req = new Request("http://localhost/g/abc12-x/api/media?limit=2", {
+      headers: { cookie: `gk_unlock_${albumId}=${tok}` },
+    });
+    const res = await GET(req as any, { params: Promise.resolve({ slug: "abc12-x" }) });
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.items).toHaveLength(2);
+    expect(json.items[0]).toHaveProperty("thumbUrl");
+    expect(json.items[0]).toHaveProperty("previewUrl");
+    expect(json.hasMore).toBe(true);
+  });
+});
+
+import { eq } from "drizzle-orm";
+```
+
+- [ ] **Step 6: Implement `media/route.ts`**
+
+```ts
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { getAlbumBySlug } from "@/features/guest-gallery/server/get-album-by-slug";
+import { getAlbumMediaPage } from "@/features/guest-gallery/server/get-album-media-page";
+import { batchPresignUrls } from "@/features/guest-gallery/server/batch-presign-urls";
+import { verifyCookie } from "@/features/guest-gallery/lib/cookies";
+
+export async function GET(req: Request, ctx: { params: Promise<{ slug: string }> }) {
+  const secret = process.env.GUEST_COOKIE_SECRET!;
+  const { slug } = await ctx.params;
+  const found = await getAlbumBySlug(slug);
+  if (!found || !found.album.isPublic) return new NextResponse(null, { status: 404 });
+
+  // Enforce password gate if applicable
+  if (found.album.passwordHash) {
+    const cookieStore = await cookies();
+    const tok = cookieStore.get(`gk_unlock_${found.album.id}`)?.value;
+    const payload = tok ? await verifyCookie<{ albumId: string }>(tok, secret) : null;
+    if (!payload || payload.albumId !== found.album.id) {
+      return new NextResponse(null, { status: 401 });
+    }
+  }
+
+  const url = new URL(req.url);
+  const limit = Math.min(Number(url.searchParams.get("limit") ?? "60"), 100);
+  const cursor = url.searchParams.get("cursor");
+
+  const page = await getAlbumMediaPage({ albumId: found.album.id, limit, cursor });
+  const presigned = await batchPresignUrls(
+    page.items.map((m) => ({ id: m.id, r2Key: m.r2Key, thumbnailR2Key: m.thumbnailR2Key, variants: m.variants ?? {} })),
+    60 * 60,
+  );
+  const items = page.items.map((m) => ({
+    id: m.id,
+    thumbUrl: presigned[m.id].thumbUrl,
+    previewUrl: presigned[m.id].previewUrl,
+    width: m.width,
+    height: m.height,
+  }));
+  return NextResponse.json({ items, nextCursor: page.nextCursor, hasMore: page.hasMore });
+}
+```
+
+- [ ] **Step 7: Run route test → PASS**
+
+- [ ] **Step 8: Update `gallery-grid.tsx` to support infinite scroll**
+
+Replace component implementation:
+
+```tsx
+"use client";
+import { useEffect, useRef, useState } from "react";
+import { FavoriteHeart } from "./favorite-heart";
+import { Lightbox } from "./lightbox";
+
+export type Photo = {
+  id: string;
+  thumbUrl: string;
+  previewUrl: string;
+  width: number | null;
+  height: number | null;
+};
+
+export function GalleryGrid({
+  slug, initialPhotos, initialCursor, hasMore: initialHasMore,
+  hasGuest, downloadPolicy, favorites,
+}: {
+  slug: string;
+  initialPhotos: Photo[];
+  initialCursor: string | null;
+  hasMore: boolean;
+  hasGuest: boolean;
+  downloadPolicy: "none" | "watermarked" | "clean";
+  favorites: Set<string>;
+}) {
+  const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
+  const [cursor, setCursor] = useState<string | null>(initialCursor);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [loading, setLoading] = useState(false);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!hasMore || loading) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        if (!entries[0].isIntersecting || loading || !hasMore) return;
+        setLoading(true);
+        try {
+          const params = new URLSearchParams({ limit: "60" });
+          if (cursor) params.set("cursor", cursor);
+          const res = await fetch(`/g/${slug}/api/media?${params.toString()}`);
+          if (!res.ok) {
+            setHasMore(false);
+            return;
+          }
+          const data = (await res.json()) as { items: Photo[]; nextCursor: string | null; hasMore: boolean };
+          setPhotos((prev) => [...prev, ...data.items]);
+          setCursor(data.nextCursor);
+          setHasMore(data.hasMore);
+        } finally {
+          setLoading(false);
+        }
+      },
+      { rootMargin: "800px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [cursor, hasMore, loading, slug]);
+
+  if (photos.length === 0) {
+    return <div className="py-20 text-center text-gray-500">Photographer belum upload foto.</div>;
+  }
+
+  return (
+    <>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1 sm:gap-2">
+        {photos.map((p, i) => (
+          <div key={p.id} className="relative aspect-square overflow-hidden bg-gray-100">
+            <img
+              src={p.thumbUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              width={p.width ?? 400}
+              height={p.height ?? 400}
+              onClick={() => setOpenIndex(i)}
+              className="h-full w-full object-cover cursor-pointer"
+            />
+            <div className="absolute bottom-1 right-1">
+              <FavoriteHeart slug={slug} mediaId={p.id} hasGuest={hasGuest} initialFavorited={favorites.has(p.id)} />
+            </div>
+          </div>
+        ))}
+      </div>
+      {hasMore && (
+        <div ref={sentinelRef} className="py-10 text-center text-xs text-gray-500">
+          {loading ? "Loading more..." : ""}
+        </div>
+      )}
+      {openIndex !== null && (
+        <Lightbox
+          slug={slug}
+          photos={photos}
+          startIndex={openIndex}
+          onClose={() => setOpenIndex(null)}
+          hasGuest={hasGuest}
+          downloadPolicy={downloadPolicy}
+          favorites={favorites}
+        />
+      )}
+    </>
+  );
+}
+```
+
+> **Caveat:** Lightbox only knows about photos already loaded. If user opens lightbox at the end of a page and swipes right, they reach the boundary of loaded photos. Acceptable trade-off for MVP — they can close, scroll to load more, then re-open. Future improvement: prefetch next page when lightbox approaches the end.
+
+- [ ] **Step 9: Update `gallery-grid.test.tsx` for new props**
+
+```tsx
+import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { GalleryGrid } from "./gallery-grid";
+
+const photos = [
+  { id: "m1", thumbUrl: "https://x/t1.jpg", previewUrl: "https://x/p1.jpg", width: 400, height: 400 },
+  { id: "m2", thumbUrl: "https://x/t2.jpg", previewUrl: "https://x/p2.jpg", width: 400, height: 400 },
+];
+
+describe("GalleryGrid", () => {
+  it("renders photos", () => {
+    render(
+      <GalleryGrid
+        slug="abc12-x"
+        initialPhotos={photos}
+        initialCursor={null}
+        hasMore={false}
+        hasGuest={false}
+        downloadPolicy="none"
+        favorites={new Set()}
+      />,
+    );
+    expect(screen.getAllByRole("img")).toHaveLength(2);
+  });
+
+  it("renders empty state when no photos", () => {
+    render(
+      <GalleryGrid
+        slug="abc12-x"
+        initialPhotos={[]}
+        initialCursor={null}
+        hasMore={false}
+        hasGuest={false}
+        downloadPolicy="none"
+        favorites={new Set()}
+      />,
+    );
+    expect(screen.getByText(/belum upload/i)).toBeInTheDocument();
+  });
+});
+```
+
+- [ ] **Step 10: Update `page.tsx` (Task 16) to use first page only**
+
+Replace the media-loading section in `src/app/g/[slug]/page.tsx`:
+
+```tsx
+// Replace:
+//   const presigned = await batchPresignUrls(found.media.map(...), 60*60);
+//   const photos = found.media.map(...);
+// With:
+import { getAlbumMediaPage } from "@/features/guest-gallery/server/get-album-media-page";
+
+const page = await getAlbumMediaPage({ albumId: found.album.id, limit: 60 });
+const presigned = await batchPresignUrls(
+  page.items.map((m) => ({ id: m.id, r2Key: m.r2Key, thumbnailR2Key: m.thumbnailR2Key, variants: m.variants ?? {} })),
+  60 * 60,
+);
+const initialPhotos = page.items.map((m) => ({
+  id: m.id,
+  thumbUrl: presigned[m.id].thumbUrl,
+  previewUrl: presigned[m.id].previewUrl,
+  width: m.width,
+  height: m.height,
+}));
+
+// And update <GalleryGrid> usage:
+<GalleryGrid
+  slug={slug}
+  initialPhotos={initialPhotos}
+  initialCursor={page.nextCursor}
+  hasMore={page.hasMore}
+  hasGuest={hasGuest}
+  downloadPolicy={found.album.downloadPolicy}
+  favorites={favorites}
+/>
+```
+
+Also note: `previewUrls` for `<OfflineToggle>` should now fetch ALL pages (offline opt-in is "save entire album"). Add a helper:
+
+```tsx
+// In page.tsx, after computing initialPhotos:
+// For offline opt-in, we still need URLs for ALL photos.
+// Cheap path: query just the IDs + keys for the rest, presign in batch.
+// For MVP simplicity, fetch one big page (limit=1000) only if user opens
+// offline modal — defer to client-side: <OfflineToggle> calls /api/media
+// repeatedly until hasMore=false, then caches each previewUrl.
+```
+
+> **Note on `<OfflineToggle>`:** It will be implemented in Task 15 with `slug` + `albumId` props (NOT `urls`), and will lazily fetch all preview URLs by paginating `/g/[slug]/api/media` on click. Task 15 step for offline-toggle reflects this — see the updated implementation there.
+
+- [ ] **Step 11: Run full test suite**
+
+```bash
+pnpm test
+```
+
+All previous tests + new tests pass.
+
+- [ ] **Step 12: Commit**
+
+```bash
+git add src/features/guest-gallery/server/get-album-media-page.ts \
+        src/features/guest-gallery/server/get-album-media-page.test.ts \
+        src/app/g/[slug]/api/media \
+        src/features/guest-gallery/components/gallery-grid.tsx \
+        src/features/guest-gallery/components/gallery-grid.test.tsx \
+        src/features/guest-gallery/components/offline-toggle.tsx \
+        src/app/g/[slug]/page.tsx
+git commit -m "feat(guest-gallery): paginate media + infinite scroll + lazy offline cache"
+```
+
+---
+
 ## Task 15: Components — install-pwa-button, offline-toggle, album-header
 
 ### album-header (server component)
@@ -2478,34 +2949,54 @@ export function InstallPwaButton() {
 "use client";
 import { useState } from "react";
 
-export function OfflineToggle({ urls, albumId }: { urls: string[]; albumId: string }) {
-  const [progress, setProgress] = useState<number | null>(null);
+export function OfflineToggle({ slug, albumId }: { slug: string; albumId: string }) {
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [done, setDone] = useState(false);
+
+  async function fetchAllPreviewUrls(): Promise<string[]> {
+    const all: string[] = [];
+    let cursor: string | null = null;
+    while (true) {
+      const params = new URLSearchParams({ limit: "100" });
+      if (cursor) params.set("cursor", cursor);
+      const res = await fetch(`/g/${slug}/api/media?${params.toString()}`);
+      if (!res.ok) break;
+      const data = (await res.json()) as {
+        items: { previewUrl: string }[];
+        nextCursor: string | null;
+        hasMore: boolean;
+      };
+      for (const it of data.items) all.push(it.previewUrl);
+      if (!data.hasMore) break;
+      cursor = data.nextCursor;
+    }
+    return all;
+  }
 
   async function saveOffline() {
     if (typeof caches === "undefined") return;
+    const urls = await fetchAllPreviewUrls();
     const cache = await caches.open(`gallery-album-${albumId}-v1`);
-    setProgress(0);
+    setProgress({ done: 0, total: urls.length });
     let i = 0;
     for (const url of urls) {
-      try {
-        await cache.add(url);
-      } catch {}
+      try { await cache.add(url); } catch {}
       i++;
-      setProgress(i);
+      setProgress({ done: i, total: urls.length });
     }
     setDone(true);
   }
 
   if (done) return <button disabled className="text-sm text-green-700">Saved offline ✓</button>;
-
   return (
     <button onClick={saveOffline} className="text-sm rounded-md border px-3 py-1">
-      {progress === null ? "Save offline" : `Caching ${progress}/${urls.length}...`}
+      {progress === null ? "Save offline" : `Caching ${progress.done}/${progress.total}...`}
     </button>
   );
 }
 ```
+
+> **Caller usage:** `<OfflineToggle slug={slug} albumId={found.album.id} />` — Task 16 page composition uses these props (NOT `urls`).
 
 - [ ] **Step 5: Run tests → PASS**
 
@@ -2653,23 +3144,27 @@ export default async function GuestGalleryPage({ params }: { params: Promise<{ s
     for (const f of favs) favorites.add(f.mediaId);
   }
 
+  // NOTE: Task 14b updates this section to use getAlbumMediaPage (first 60 only)
+  // and pass initialCursor/hasMore to <GalleryGrid>. The snippet below shows the
+  // FINAL shape after Task 14b is applied.
   const coverUrl = photos.find((p) => p.id === found.album.coverMediaId)?.previewUrl ?? photos[0]?.previewUrl ?? null;
-  const previewUrls = photos.map((p) => p.previewUrl);
 
   return (
     <main>
-      <AlbumHeader slug={slug} title={found.album.name} photoCount={photos.length} coverUrl={coverUrl} />
+      <AlbumHeader slug={slug} title={found.album.name} photoCount={found.media.length} coverUrl={coverUrl} />
       <div className="px-4 sm:px-6 py-6 flex flex-wrap gap-3 justify-between items-center">
-        <p className="text-sm text-gray-600">{photos.length} foto</p>
+        <p className="text-sm text-gray-600">{found.media.length} foto</p>
         <div className="flex gap-2">
           <InstallPwaButton />
-          <OfflineToggle urls={previewUrls} albumId={found.album.id} />
+          <OfflineToggle slug={slug} albumId={found.album.id} />
         </div>
       </div>
       <div className="px-1 sm:px-2">
         <GalleryGrid
           slug={slug}
-          photos={photos}
+          initialPhotos={photos}
+          initialCursor={null}
+          hasMore={false}
           hasGuest={hasGuest}
           downloadPolicy={found.album.downloadPolicy}
           favorites={favorites}
