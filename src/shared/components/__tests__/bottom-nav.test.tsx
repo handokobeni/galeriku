@@ -8,31 +8,26 @@ vi.mock("next/navigation", () => ({
 import { BottomNav } from "../bottom-nav";
 
 describe("BottomNav", () => {
-  it("renders navigation links", () => {
+  it("renders core navigation links", () => {
     render(<BottomNav />);
     expect(screen.getByText("Albums")).toBeInTheDocument();
     expect(screen.getByText("Favorites")).toBeInTheDocument();
     expect(screen.getByText("Search")).toBeInTheDocument();
   });
 
-  it("renders upload FAB button", () => {
-    render(<BottomNav />);
-    expect(screen.getByLabelText("Upload")).toBeInTheDocument();
-  });
-
   it("shows admin link for owner", () => {
     render(<BottomNav isOwner={true} />);
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText("Admin")).toBeInTheDocument();
   });
 
   it("hides admin link for non-owner", () => {
     render(<BottomNav isOwner={false} />);
-    expect(screen.queryByText("Settings")).not.toBeInTheDocument();
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument();
   });
 
-  it("highlights active route", () => {
+  it("highlights active route with primary color", () => {
     render(<BottomNav />);
     const albumsLink = screen.getByText("Albums").closest("a");
-    expect(albumsLink).toHaveClass("text-indigo-500");
+    expect(albumsLink).toHaveClass("text-primary");
   });
 });

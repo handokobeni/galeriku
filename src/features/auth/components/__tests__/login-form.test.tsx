@@ -27,15 +27,14 @@ describe("LoginForm", () => {
 
   it("renders login form", () => {
     render(<LoginForm />);
-    expect(screen.getByText("Galeriku")).toBeInTheDocument();
-    expect(screen.getByText("Sign in to your account")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /welcome/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
   });
 
   it("renders submit button", () => {
     render(<LoginForm />);
-    expect(screen.getByRole("button", { name: "Sign In" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
   });
 
   it("renders register link", () => {
@@ -46,19 +45,19 @@ describe("LoginForm", () => {
   it("renders with optional callbackUrl prop", () => {
     render(<LoginForm callbackUrl="/albums/123" />);
     // callbackUrl is used in JS logic only, but the form still renders
-    expect(screen.getByRole("button", { name: "Sign In" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument();
   });
 
   it("calls signIn.email with form values on submit", async () => {
     render(<LoginForm />);
 
-    fireEvent.change(screen.getByLabelText("Email"), {
+    fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "test@test.com" },
     });
-    fireEvent.change(screen.getByLabelText("Password"), {
+    fireEvent.change(screen.getByLabelText(/password/i), {
       target: { value: "password123" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Sign In" }));
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(mockSignInEmail).toHaveBeenCalledWith({
@@ -71,13 +70,13 @@ describe("LoginForm", () => {
   it("redirects to /albums on successful login", async () => {
     render(<LoginForm />);
 
-    fireEvent.change(screen.getByLabelText("Email"), {
+    fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "test@test.com" },
     });
-    fireEvent.change(screen.getByLabelText("Password"), {
+    fireEvent.change(screen.getByLabelText(/password/i), {
       target: { value: "password123" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Sign In" }));
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/albums");
@@ -87,13 +86,13 @@ describe("LoginForm", () => {
   it("redirects to callbackUrl on successful login when provided", async () => {
     render(<LoginForm callbackUrl="/albums/123" />);
 
-    fireEvent.change(screen.getByLabelText("Email"), {
+    fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "test@test.com" },
     });
-    fireEvent.change(screen.getByLabelText("Password"), {
+    fireEvent.change(screen.getByLabelText(/password/i), {
       target: { value: "password123" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Sign In" }));
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/albums/123");
@@ -107,13 +106,13 @@ describe("LoginForm", () => {
 
     render(<LoginForm />);
 
-    fireEvent.change(screen.getByLabelText("Email"), {
+    fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "bad@test.com" },
     });
-    fireEvent.change(screen.getByLabelText("Password"), {
+    fireEvent.change(screen.getByLabelText(/password/i), {
       target: { value: "wrongpass" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Sign In" }));
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(

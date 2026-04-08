@@ -86,7 +86,7 @@ export function ResetPasswordForm({
         Choose a new <em className="italic font-light text-primary">password</em>
       </h1>
       <p className="mt-3 font-editorial text-sm text-muted-foreground italic">
-        Pick a strong one — at least 8 characters
+        Pick a strong one — minimum 8 characters
       </p>
       <div className="divider-gold my-7" />
 

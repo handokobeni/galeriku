@@ -12,7 +12,7 @@ test.afterAll(async () => {
 test("first-time visitor sees setup wizard", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/setup/);
-  await expect(page.getByText("Welcome to Galeriku")).toBeVisible();
+  await expect(page.getByRole("heading", { name: /set up your studio/i })).toBeVisible();
 });
 
 test("can create owner account via setup wizard", async ({ page }) => {

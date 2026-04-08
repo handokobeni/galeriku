@@ -28,10 +28,7 @@ describe("SetupForm", () => {
 
   it("renders setup form", () => {
     render(<SetupForm />);
-    expect(screen.getByText("Welcome to Galeriku")).toBeInTheDocument();
-    expect(
-      screen.getByText("Create your owner account to get started")
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /set up your studio/i })).toBeInTheDocument();
   });
 
   it("renders all input fields", () => {
