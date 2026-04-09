@@ -95,6 +95,34 @@ export function proxy(request: NextRequest) {
     .replace(/\s{2,}/g, " ")
     .trim();
 
+  // ───── 4. OWASP Secure Headers ─────
+  // Reference: https://owasp.org/www-project-secure-headers/
+  // Permissions-Policy: explicitly disable browser features the app
+  // doesn't use, so a compromised script can't request them.
+  const permissionsPolicy = [
+    "accelerometer=()",
+    "ambient-light-sensor=()",
+    "autoplay=()",
+    "battery=()",
+    "camera=()",
+    "display-capture=()",
+    "document-domain=()",
+    "encrypted-media=()",
+    "fullscreen=(self)",
+    "geolocation=()",
+    "gyroscope=()",
+    "magnetometer=()",
+    "microphone=()",
+    "midi=()",
+    "payment=()",
+    "picture-in-picture=()",
+    "publickey-credentials-get=()",
+    "screen-wake-lock=()",
+    "sync-xhr=()",
+    "usb=()",
+    "xr-spatial-tracking=()",
+  ].join(", ");
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", contentSecurityPolicyHeaderValue);
@@ -102,7 +130,52 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
+
+  // CSP — primary defense against XSS / data injection
   response.headers.set("Content-Security-Policy", contentSecurityPolicyHeaderValue);
+
+  // HSTS — force HTTPS for 2 years incl subdomains. Production only,
+  // because dev runs on http://localhost. Once set in prod, the browser
+  // will refuse plain HTTP for the entire domain for max-age seconds.
+  if (!isDev) {
+    response.headers.set(
+      "Strict-Transport-Security",
+      "max-age=63072000; includeSubDomains; preload",
+    );
+  }
+
+  // Anti-clickjacking. CSP frame-ancestors 'none' already covers this in
+  // modern browsers, but X-Frame-Options is still respected by older ones.
+  response.headers.set("X-Frame-Options", "DENY");
+
+  // Prevent MIME-type sniffing. Browsers must respect the Content-Type
+  // header instead of guessing — stops "polyglot" file uploads from being
+  // executed as scripts.
+  response.headers.set("X-Content-Type-Options", "nosniff");
+
+  // Referrer policy. strict-origin-when-cross-origin sends the full URL
+  // for same-origin requests, just the origin for cross-origin same-protocol,
+  // and nothing for HTTPS→HTTP downgrades.
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+
+  // Disable browser features the app doesn't use.
+  response.headers.set("Permissions-Policy", permissionsPolicy);
+
+  // Cross-Origin isolation. COOP=same-origin prevents window.opener attacks
+  // and process-isolates the page from cross-origin documents. CORP=same-site
+  // is the most permissive setting that still blocks cross-site embedding
+  // of our resources — chose same-site (not same-origin) so R2 images on a
+  // sibling subdomain still load when proxied through our origin in future.
+  // COEP is intentionally NOT set: require-corp would break R2 image loads
+  // because R2 doesn't return CORP headers.
+  response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  response.headers.set("Cross-Origin-Resource-Policy", "same-site");
+
+  // Legacy Adobe Flash policy. Flash is dead but the header is cheap.
+  response.headers.set("X-Permitted-Cross-Domain-Policies", "none");
+
+  // Hide implementation details — Next.js sets X-Powered-By by default.
+  response.headers.delete("X-Powered-By");
 
   return response;
 }
