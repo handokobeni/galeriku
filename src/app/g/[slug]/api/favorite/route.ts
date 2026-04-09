@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getAlbumBySlug } from "@/features/guest-gallery/server/get-album-by-slug";
 import { toggleFavorite } from "@/features/guest-gallery/server/toggle-favorite";
 import { verifyCookie } from "@/features/guest-gallery/lib/cookies";
-import { getClientKey } from "@/features/guest-gallery/lib/client-ip";
+import { getClientKey } from "@/shared/lib/client-ip";
 
 async function handle(req: Request, slug: string, action: "add" | "remove") {
   const secret = process.env.GUEST_COOKIE_SECRET!;

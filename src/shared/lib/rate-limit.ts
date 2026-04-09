@@ -60,3 +60,11 @@ export function createRateLimiter(opts: { limit: number; windowMs: number }): Ra
 export const unlockLimiter = createRateLimiter({ limit: 10, windowMs: 5 * 60_000 });
 export const guestRegisterLimiter = createRateLimiter({ limit: 5, windowMs: 30 * 60_000 });
 export const favoriteLimiter = createRateLimiter({ limit: 120, windowMs: 60_000 });
+
+// Studio auth limiters — tighter than guest gallery because the threat model
+// includes credential brute force on owner/admin accounts and email
+// enumeration on the forgot-password endpoint.
+export const forgotPasswordLimiter = createRateLimiter({
+  limit: 3,
+  windowMs: 15 * 60_000,
+});

@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { galleryGuests } from "@/db/schema";
 import { signCookie } from "../lib/cookies";
-import { guestRegisterLimiter } from "../lib/rate-limit";
+import { guestRegisterLimiter } from "@/shared/lib/rate-limit";
 
 export type RegisterResult =
   | { ok: true; token: string; guestId: string }

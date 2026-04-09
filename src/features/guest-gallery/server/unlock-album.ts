@@ -1,7 +1,7 @@
 import { verify } from "@node-rs/argon2";
 import { getAlbumBySlug } from "./get-album-by-slug";
 import { signCookie } from "../lib/cookies";
-import { unlockLimiter } from "../lib/rate-limit";
+import { unlockLimiter } from "@/shared/lib/rate-limit";
 
 export type UnlockResult =
   | { ok: true; token: string; albumId: string }

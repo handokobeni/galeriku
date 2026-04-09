@@ -44,6 +44,24 @@ export const auth = betterAuth({
       maxAge: 60 * 5, // 5 minutes
     },
   },
+  rateLimit: {
+    enabled: true,
+    // Default fallback for any auth endpoint not explicitly listed below
+    window: 60,
+    max: 30,
+    customRules: {
+      // Login: 10 attempts per minute per IP. Brute force protection without
+      // blocking legit users who fat-fingered their password a few times.
+      "/sign-in/email": { window: 60, max: 10 },
+      // Sign-up: 5 per 10 minutes per IP. Stops automated account creation.
+      "/sign-up/email": { window: 10 * 60, max: 5 },
+      // Password reset request via Better Auth's own endpoint (in case it's
+      // hit directly instead of through our checkEmailAndRequestReset action,
+      // which has its own limiter). 3 / 15min per IP.
+      "/forget-password": { window: 15 * 60, max: 3 },
+      "/request-password-reset": { window: 15 * 60, max: 3 },
+    },
+  },
   advanced: {
     database: {
       generateId: () => crypto.randomUUID(),

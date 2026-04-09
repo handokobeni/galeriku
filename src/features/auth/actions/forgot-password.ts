@@ -5,10 +5,32 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { user } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { forgotPasswordLimiter } from "@/shared/lib/rate-limit";
+import { getClientKey } from "@/shared/lib/client-ip";
+
+async function getRateLimitKey(): Promise<string> {
+  const h = await headers();
+  // Build a Request-shape stub so we can reuse the shared resolver.
+  const req = new Request("http://local", {
+    headers: new Headers({
+      "cf-connecting-ip": h.get("cf-connecting-ip") ?? "",
+      "x-real-ip": h.get("x-real-ip") ?? "",
+      "x-forwarded-for": h.get("x-forwarded-for") ?? "",
+    }),
+  });
+  return getClientKey(req);
+}
 
 export async function checkEmailAndRequestReset(email: string) {
   if (!email || !email.includes("@")) {
     return { error: "Invalid email" };
+  }
+
+  // Rate limit BEFORE the DB lookup so an attacker can't enumerate emails
+  // even at sub-limit speed. Per IP, scoped to forgot-password.
+  const clientKey = await getRateLimitKey();
+  if (!forgotPasswordLimiter.check(`forgot:${clientKey}`)) {
+    return { error: "Terlalu banyak percobaan. Coba lagi dalam beberapa menit." };
   }
 
   // Check if user exists

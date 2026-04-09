@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { unlockAlbum } from "@/features/guest-gallery/server/unlock-album";
-import { getClientKey } from "@/features/guest-gallery/lib/client-ip";
+import { getClientKey } from "@/shared/lib/client-ip";
 
 export async function POST(req: Request, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params;

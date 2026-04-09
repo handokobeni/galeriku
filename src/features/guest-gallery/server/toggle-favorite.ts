@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { galleryFavorites, media } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
-import { favoriteLimiter } from "../lib/rate-limit";
+import { favoriteLimiter } from "@/shared/lib/rate-limit";
 
 export type ToggleResult = { ok: true } | { ok: false; reason: "not-found" | "rate-limited" };
 
