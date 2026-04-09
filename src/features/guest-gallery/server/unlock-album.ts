@@ -17,15 +17,17 @@ export async function unlockAlbum(input: {
   const secret = process.env.GUEST_COOKIE_SECRET;
   if (!secret) throw new Error("GUEST_COOKIE_SECRET not configured");
 
+  // Resolve album FIRST so non-existent slugs always return not-found and
+  // never leak rate-limit state to attackers spraying random slugs.
+  const result = await getAlbumBySlug(input.slug);
+  if (!result || !result.album.isPublic) {
+    return { ok: false, reason: "not-found" };
+  }
+
   const rateKey = `unlock:${input.clientKey}:${input.slug}`;
   // Check (without incrementing) — only count failed attempts below.
   if (!unlockLimiter.isAllowed(rateKey)) {
     return { ok: false, reason: "rate-limited" };
-  }
-
-  const result = await getAlbumBySlug(input.slug);
-  if (!result || !result.album.isPublic) {
-    return { ok: false, reason: "not-found" };
   }
 
   if (result.album.passwordHash) {

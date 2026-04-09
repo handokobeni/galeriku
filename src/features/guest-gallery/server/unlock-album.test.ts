@@ -69,4 +69,57 @@ describe("unlockAlbum", () => {
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe("rate-limited");
   });
+
+  it("4 wrong attempts followed by correct password still succeeds (only failures counted)", async () => {
+    const ph = await hash("hunter2");
+    await db.insert(album).values({
+      name: "X", slug: "unl12-pre", isPublic: true, passwordHash: ph, createdBy: userId,
+    });
+    for (let i = 0; i < 4; i++) {
+      const r = await unlockAlbum({ slug: "unl12-pre", password: "WRONG", clientKey: "preok" });
+      expect(r.ok).toBe(false);
+    }
+    const r = await unlockAlbum({ slug: "unl12-pre", password: "hunter2", clientKey: "preok" });
+    expect(r.ok).toBe(true);
+  });
+
+  it("successful unlock clears the failure bucket so subsequent retries don't accumulate", async () => {
+    const ph = await hash("hunter2");
+    await db.insert(album).values({
+      name: "X", slug: "unl12-reset", isPublic: true, passwordHash: ph, createdBy: userId,
+    });
+    // 3 failures
+    for (let i = 0; i < 3; i++) {
+      await unlockAlbum({ slug: "unl12-reset", password: "WRONG", clientKey: "resetkey" });
+    }
+    // Success should clear the bucket
+    const ok = await unlockAlbum({ slug: "unl12-reset", password: "hunter2", clientKey: "resetkey" });
+    expect(ok.ok).toBe(true);
+
+    // Now we should have a fresh budget — 5 more wrong attempts allowed
+    for (let i = 0; i < 5; i++) {
+      const r = await unlockAlbum({ slug: "unl12-reset", password: "WRONG", clientKey: "resetkey" });
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.reason).toBe("wrong-password");
+    }
+    // 6th attempt now blocked
+    const blocked = await unlockAlbum({ slug: "unl12-reset", password: "WRONG", clientKey: "resetkey" });
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) expect(blocked.reason).toBe("rate-limited");
+  });
+
+  it("not-found wins over rate-limited (no info leak about random slugs)", async () => {
+    // Hammer rate-limit on a real album
+    const ph = await hash("hunter2");
+    await db.insert(album).values({
+      name: "X", slug: "unl12-leak", isPublic: true, passwordHash: ph, createdBy: userId,
+    });
+    for (let i = 0; i < 6; i++) {
+      await unlockAlbum({ slug: "unl12-leak", password: "WRONG", clientKey: "leakkey" });
+    }
+    // Now request a slug that doesn't exist with the same client key
+    const r = await unlockAlbum({ slug: "totally-fake-slug", password: "x", clientKey: "leakkey" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("not-found");
+  });
 });

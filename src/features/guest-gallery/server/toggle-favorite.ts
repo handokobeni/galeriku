@@ -12,7 +12,10 @@ export async function toggleFavorite(input: {
   action: "add" | "remove";
   clientKey: string;
 }): Promise<ToggleResult> {
-  if (!favoriteLimiter.check(`fav:${input.clientKey}`)) {
+  // Scope rate limit per album so a busy wedding venue (many guests behind
+  // one NAT) doesn't have one bucket starving the rest. Caller already
+  // includes guestId in clientKey for further isolation.
+  if (!favoriteLimiter.check(`fav:${input.clientKey}:${input.albumId}`)) {
     return { ok: false, reason: "rate-limited" };
   }
 

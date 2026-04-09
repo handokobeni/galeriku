@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getAlbumBySlug } from "@/features/guest-gallery/server/get-album-by-slug";
 import { toggleFavorite } from "@/features/guest-gallery/server/toggle-favorite";
 import { verifyCookie } from "@/features/guest-gallery/lib/cookies";
+import { getClientKey } from "@/features/guest-gallery/lib/client-ip";
 
 async function handle(req: Request, slug: string, action: "add" | "remove") {
   const secret = process.env.GUEST_COOKIE_SECRET!;
@@ -19,7 +20,10 @@ async function handle(req: Request, slug: string, action: "add" | "remove") {
   }
 
   const body = await req.json().catch(() => ({}));
-  const clientKey = req.headers.get("x-forwarded-for") ?? payload.guestId;
+  // Use the guest cookie identity (already verified) as the rate-limit key.
+  // It's stable per-guest and avoids per-IP collapse for many guests behind
+  // the same NAT (a wedding venue).
+  const clientKey = `${getClientKey(req)}:${payload.guestId}`;
   const r = await toggleFavorite({
     guestId: payload.guestId,
     mediaId: body.mediaId,

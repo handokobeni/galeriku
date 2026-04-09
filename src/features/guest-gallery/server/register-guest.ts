@@ -18,12 +18,14 @@ export async function registerGuest(input: {
   const secret = process.env.GUEST_COOKIE_SECRET;
   if (!secret) throw new Error("GUEST_COOKIE_SECRET not configured");
 
+  // Validate FIRST so empty/invalid submissions don't consume the rate-limit
+  // budget. Only count semantically-valid attempts.
+  const trimmed = input.name.trim().slice(0, MAX_NAME);
+  if (trimmed.length === 0) return { ok: false, reason: "invalid-name" };
+
   if (!guestRegisterLimiter.check(`guest:${input.clientKey}:${input.albumId}`)) {
     return { ok: false, reason: "rate-limited" };
   }
-
-  const trimmed = input.name.trim().slice(0, MAX_NAME);
-  if (trimmed.length === 0) return { ok: false, reason: "invalid-name" };
 
   const [g] = await db
     .insert(galleryGuests)
