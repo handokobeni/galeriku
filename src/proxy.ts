@@ -72,7 +72,8 @@ export function proxy(request: NextRequest) {
   }
 
   // ───── 3. CSP nonce for HTML responses ─────
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  // Use Web API base64 (btoa) — Buffer is not always available in Edge runtime.
+  const nonce = btoa(crypto.randomUUID());
   const isDev = process.env.NODE_ENV === "development";
 
   const cspHeader = `
