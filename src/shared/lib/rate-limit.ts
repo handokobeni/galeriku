@@ -68,3 +68,17 @@ export const forgotPasswordLimiter = createRateLimiter({
   limit: 3,
   windowMs: 15 * 60_000,
 });
+
+// Login attempts: 10 / 5 minutes per IP. Lenient enough for legit typos
+// on first try, tight enough that brute forcing a strong password is
+// infeasible (10/min × 60 × 24 = 14,400/day vs ~10^12 keyspace).
+export const loginLimiter = createRateLimiter({
+  limit: 10,
+  windowMs: 5 * 60_000,
+});
+
+// Sign-up: 5 / 10 minutes per IP — stops automated account creation.
+export const signupLimiter = createRateLimiter({
+  limit: 5,
+  windowMs: 10 * 60_000,
+});

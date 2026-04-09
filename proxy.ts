@@ -1,8 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
+import { loginLimiter, signupLimiter, type RateLimiter } from "@/shared/lib/rate-limit";
+import { getClientKey } from "@/shared/lib/client-ip";
 
 const R2_DOMAIN = process.env.R2_PUBLIC_DOMAIN ?? "";
 
+// Auth endpoints rate-limited at the edge before reaching Better Auth.
+// Belt-and-suspenders layer on top of Better Auth's own rateLimit config —
+// guarantees protection regardless of Better Auth's internal storage state
+// and uses our shared in-memory limiter so the budget is consistent with
+// the rest of the app.
+const RATE_LIMITED_AUTH_ROUTES: Record<string, RateLimiter> = {
+  "/api/auth/sign-in/email": loginLimiter,
+  "/api/auth/sign-up/email": signupLimiter,
+};
+
 export function proxy(request: NextRequest) {
+  // ───── Auth rate limiting ─────
+  if (request.method === "POST") {
+    const path = request.nextUrl.pathname;
+    const limiter = RATE_LIMITED_AUTH_ROUTES[path];
+    if (limiter) {
+      const clientKey = getClientKey(request);
+      const key = `${path}:${clientKey}`;
+      if (!limiter.check(key)) {
+        return new NextResponse(
+          JSON.stringify({
+            error: "Too many attempts. Please try again in a few minutes.",
+          }),
+          {
+            status: 429,
+            headers: {
+              "content-type": "application/json",
+              "retry-after": "300",
+            },
+          },
+        );
+      }
+    }
+  }
+
+  // ───── Existing CSP nonce flow ─────
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const isDev = process.env.NODE_ENV === "development";
 
