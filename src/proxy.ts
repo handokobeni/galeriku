@@ -176,8 +176,8 @@ export function proxy(request: NextRequest) {
   // Legacy Adobe Flash policy. Flash is dead but the header is cheap.
   response.headers.set("X-Permitted-Cross-Domain-Policies", "none");
 
-  // Hide implementation details — Next.js sets X-Powered-By by default.
-  response.headers.delete("X-Powered-By");
+  // X-Powered-By is removed via next.config.ts `poweredByHeader: false`
+  // because Next adds it AFTER proxy.ts runs. headers.delete() here is a no-op.
 
   return response;
 }

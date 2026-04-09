@@ -1,15 +1,9 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 
-// CSP is handled in proxy.ts with per-request nonce
-// Only static security headers here
-const securityHeaders = [
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "X-Frame-Options", value: "DENY" },
-  { key: "X-XSS-Protection", value: "0" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=()" },
-];
+// All security headers (CSP, HSTS, OWASP suite) are now set dynamically
+// in src/proxy.ts with per-request nonce. The old static securityHeaders
+// array was removed to avoid duplication.
 
 const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
@@ -21,6 +15,9 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // Hide "X-Powered-By: Next.js" — Next adds this after proxy.ts runs,
+  // so response.headers.delete() in middleware doesn't work.
+  poweredByHeader: false,
   serverExternalPackages: ["@node-rs/argon2", "@aws-sdk/client-s3"],
   turbopack: {},
   images: {
@@ -30,14 +27,6 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
       },
     ],
-  },
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: securityHeaders,
-      },
-    ];
   },
 };
 
