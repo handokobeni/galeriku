@@ -29,6 +29,15 @@
 const TRUST_CF = process.env.TRUST_CF_HEADER === "1";
 const TRUST_XREALIP = process.env.TRUST_XREALIP === "1";
 
+function isLocalhost(req: Request): boolean {
+  try {
+    const host = new URL(req.url).hostname;
+    return host === "localhost" || host === "127.0.0.1" || host === "::1";
+  } catch {
+    return false;
+  }
+}
+
 export function getClientKey(req: Request): string {
   if (TRUST_CF) {
     const cfIp = req.headers.get("cf-connecting-ip");
@@ -50,6 +59,13 @@ export function getClientKey(req: Request): string {
       const first = xff.split(",")[0]?.trim();
       if (first) return first;
     }
+  }
+
+  // Local production testing (pnpm build && pnpm start on localhost):
+  // there is no IP header but we still want a stable bucket so the
+  // limiter is observable. Treat localhost as "local" identity.
+  if (isLocalhost(req)) {
+    return "local";
   }
 
   if (process.env.NODE_ENV === "production") {

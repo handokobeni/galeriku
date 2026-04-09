@@ -46,9 +46,14 @@ export const auth = betterAuth({
   },
   rateLimit: {
     enabled: true,
-    // DB-backed storage so limits persist across Edge isolates and cold
-    // starts (in-memory default would be per-instance only on Vercel).
-    storage: "database",
+    // In-memory storage. We previously tried `storage: "database"` but it
+    // requires the Better Auth `rateLimit` table to exist in the Drizzle
+    // schema and ours doesn't have it (we don't import Better Auth's
+    // generated schema directly). Memory works for single-instance deploys
+    // and we already have the edge limiter in proxy.ts as the primary
+    // control — Better Auth's built-in is defense in depth.
+    // TODO: when scaling to multi-region, generate the rateLimit table
+    // via @better-auth/cli + add to drizzle schema, then re-enable database.
     // Default fallback for any auth endpoint not explicitly listed below
     window: 60,
     max: 30,

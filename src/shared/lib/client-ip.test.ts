@@ -60,10 +60,12 @@ describe("getClientKey — header trust model", () => {
       vi.stubEnv("NODE_ENV", "production");
       vi.stubEnv("VERCEL", "1");
       const getClientKey = await loadClientIp();
+      // Test makes requests to http://localhost which is detected as local
+      // → returns "local" (stable bucket for local prod testing).
+      // The key point: cf-connecting-ip is NOT returned.
       const r = makeReq({ "cf-connecting-ip": "9.9.9.9" });
       const key = getClientKey(r);
-      expect(key).toMatch(/^noip-/);
-      expect(warnSpy).toHaveBeenCalled();
+      expect(key).not.toBe("9.9.9.9");
     });
   });
 
@@ -95,12 +97,25 @@ describe("getClientKey — header trust model", () => {
     });
   });
 
-  describe("production fallback when nothing is trusted", () => {
-    it("returns per-request random + warns when no trusted source", async () => {
+  describe("localhost production testing", () => {
+    it("returns 'local' for localhost even in production mode", async () => {
       vi.stubEnv("NODE_ENV", "production");
       const getClientKey = await loadClientIp();
-      const a = getClientKey(makeReq({}));
-      const b = getClientKey(makeReq({}));
+      // makeReq uses http://localhost — should be detected as local
+      const key = getClientKey(makeReq({}));
+      expect(key).toBe("local");
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("production fallback when nothing is trusted (non-localhost)", () => {
+    it("returns per-request random + warns for non-localhost prod", async () => {
+      vi.stubEnv("NODE_ENV", "production");
+      const getClientKey = await loadClientIp();
+      // Use a non-localhost URL to trigger the real production fallback
+      const r = new Request("https://galeriku.example.com/api/auth/sign-in/email");
+      const a = getClientKey(r);
+      const b = getClientKey(r);
       expect(a).toMatch(/^noip-/);
       expect(b).toMatch(/^noip-/);
       expect(a).not.toBe(b);
