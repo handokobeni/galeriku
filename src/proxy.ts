@@ -173,6 +173,12 @@ export function proxy(request: NextRequest) {
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   response.headers.set("Cross-Origin-Resource-Policy", "same-site");
 
+  // Disable browser's built-in XSS auditor. Value "0" is the OWASP
+  // recommendation — the auditor is deprecated in modern browsers and
+  // can actually be exploited for cross-site info leaks when enabled.
+  // CSP script-src with nonce is the proper XSS defense.
+  response.headers.set("X-XSS-Protection", "0");
+
   // Legacy Adobe Flash policy. Flash is dead but the header is cheap.
   response.headers.set("X-Permitted-Cross-Domain-Policies", "none");
 
