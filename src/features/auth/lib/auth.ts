@@ -44,6 +44,32 @@ export const auth = betterAuth({
       maxAge: 60 * 5, // 5 minutes
     },
   },
+  rateLimit: {
+    enabled: true,
+    // In-memory storage. We previously tried `storage: "database"` but it
+    // requires the Better Auth `rateLimit` table to exist in the Drizzle
+    // schema and ours doesn't have it (we don't import Better Auth's
+    // generated schema directly). Memory works for single-instance deploys
+    // and we already have the edge limiter in proxy.ts as the primary
+    // control — Better Auth's built-in is defense in depth.
+    // TODO: when scaling to multi-region, generate the rateLimit table
+    // via @better-auth/cli + add to drizzle schema, then re-enable database.
+    // Default fallback for any auth endpoint not explicitly listed below
+    window: 60,
+    max: 30,
+    customRules: {
+      // Login: aligned with the loginLimiter at the edge (10 / 5 minutes).
+      // Better Auth provides defense in depth here; the edge limiter is the
+      // primary control.
+      "/sign-in/email": { window: 5 * 60, max: 10 },
+      // Sign-up: 5 per 10 minutes per IP. Stops automated account creation.
+      "/sign-up/email": { window: 10 * 60, max: 5 },
+      // Password reset request via Better Auth's actual endpoint name.
+      // (The /forget-password path that earlier docs suggested does not
+      // exist in better-auth — verified in node_modules/better-auth source.)
+      "/request-password-reset": { window: 15 * 60, max: 3 },
+    },
+  },
   advanced: {
     database: {
       generateId: () => crypto.randomUUID(),

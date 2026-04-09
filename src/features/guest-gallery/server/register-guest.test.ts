@@ -55,12 +55,26 @@ describe("registerGuest", () => {
     expect(guests[0].displayName).toBe("Sinta");
   });
 
-  it("rate limits", async () => {
-    for (let i = 0; i < 3; i++) {
+  it("rate limits after 5 valid attempts", async () => {
+    for (let i = 0; i < 5; i++) {
       await registerGuest({ albumId, name: `n${i}`, clientKey: "rkey" });
     }
-    const r = await registerGuest({ albumId, name: "n4", clientKey: "rkey" });
+    const r = await registerGuest({ albumId, name: "n6", clientKey: "rkey" });
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe("rate-limited");
+  });
+
+  it("invalid name does not consume rate-limit budget", async () => {
+    // 100 empty submits should NOT trigger rate limit because they're rejected before counting
+    for (let i = 0; i < 100; i++) {
+      const r = await registerGuest({ albumId, name: "  ", clientKey: "validfirst" });
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.reason).toBe("invalid-name");
+    }
+    // Now 5 valid submits should still be allowed
+    for (let i = 0; i < 5; i++) {
+      const r = await registerGuest({ albumId, name: `valid${i}`, clientKey: "validfirst" });
+      expect(r.ok).toBe(true);
+    }
   });
 });
