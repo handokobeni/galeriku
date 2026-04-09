@@ -97,30 +97,20 @@ export function proxy(request: NextRequest) {
 
   // ───── 4. OWASP Secure Headers ─────
   // Reference: https://owasp.org/www-project-secure-headers/
-  // Permissions-Policy: explicitly disable browser features the app
-  // doesn't use, so a compromised script can't request them.
+  //
+  // Permissions-Policy: deny browser features the app doesn't use, so a
+  // compromised script can't request them. Trimmed to features that
+  // actually matter for our threat model — we skip deprecated APIs and
+  // sensors that browsers already gate behind user consent.
   const permissionsPolicy = [
-    "accelerometer=()",
-    "ambient-light-sensor=()",
-    "autoplay=()",
-    "battery=()",
-    "camera=()",
-    "display-capture=()",
-    "document-domain=()",
-    "encrypted-media=()",
-    "fullscreen=(self)",
-    "geolocation=()",
-    "gyroscope=()",
-    "magnetometer=()",
-    "microphone=()",
-    "midi=()",
-    "payment=()",
-    "picture-in-picture=()",
-    "publickey-credentials-get=()",
-    "screen-wake-lock=()",
-    "sync-xhr=()",
-    "usb=()",
-    "xr-spatial-tracking=()",
+    "camera=()",                      // photographers use file upload, not browser camera
+    "microphone=()",                  // no audio capture
+    "geolocation=()",                 // no location access
+    "payment=()",                     // no Payment Request API (billing comes later)
+    "usb=()",                         // no WebUSB
+    "display-capture=()",             // block screen recording attempts
+    "publickey-credentials-get=()",   // no WebAuthn yet
+    "fullscreen=(self)",              // allow only same-origin (lightbox uses it)
   ].join(", ");
 
   const requestHeaders = new Headers(request.headers);
