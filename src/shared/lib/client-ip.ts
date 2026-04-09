@@ -1,43 +1,64 @@
 /**
  * Resolve a stable per-client identifier for rate limiting.
  *
- * Order of preference (most → least trusted):
- *  1. cf-connecting-ip   (Cloudflare)
- *  2. x-real-ip          (Nginx, generic reverse proxies)
- *  3. x-forwarded-for    (first hop only — split + trim)
+ * THREAT MODEL: HTTP IP headers are user-controllable. An attacker who
+ * sets `cf-connecting-ip: 1.2.3.4` rotating values can completely bypass
+ * every rate limiter unless we restrict which header sources we trust.
  *
- * In production, if NONE of these resolve to a non-empty value, that means
- * the proxy in front of us is misconfigured and every request would collapse
- * into a single rate-limit bucket. We log a loud warning so it surfaces in
- * server logs, and use a safe but very granular fallback (random per request)
- * which effectively disables rate limiting for that one request rather than
- * letting one attacker DoS everyone else.
+ * Trust model is configured by the deployment target:
  *
- * In dev / test, we fall back to "local" so dev requests share a bucket and
+ *  • Vercel (default): only `x-forwarded-for` is trusted, and only the
+ *    LEFTMOST entry — Vercel's edge always overwrites/adds this header
+ *    so the leftmost entry is the real client. Any user-controlled
+ *    `cf-connecting-ip` / `x-real-ip` is ignored.
+ *
+ *  • Cloudflare (TRUST_CF_HEADER=1): trust `cf-connecting-ip` first.
+ *    Only enable when actually behind Cloudflare — otherwise spoofable.
+ *
+ *  • Other reverse proxies (TRUST_XREALIP=1): trust `x-real-ip`. Only
+ *    enable when actually behind nginx / similar that overwrites it.
+ *
+ * If NONE of these are trusted/present in production, log a loud warning
+ * and fall back to a per-request random key — disables rate limiting for
+ * that one request but doesn't let an attacker poison shared buckets.
+ *
+ * In dev / test, fall back to "local" so dev requests share a bucket and
  * the limiter behavior remains testable.
  */
+
+const TRUST_CF = process.env.TRUST_CF_HEADER === "1";
+const TRUST_XREALIP = process.env.TRUST_XREALIP === "1";
+
 export function getClientKey(req: Request): string {
-  const cfIp = req.headers.get("cf-connecting-ip");
-  if (cfIp) return cfIp;
+  if (TRUST_CF) {
+    const cfIp = req.headers.get("cf-connecting-ip");
+    if (cfIp) return cfIp;
+  }
 
-  const realIp = req.headers.get("x-real-ip");
-  if (realIp) return realIp;
+  if (TRUST_XREALIP) {
+    const realIp = req.headers.get("x-real-ip");
+    if (realIp) return realIp;
+  }
 
-  const xff = req.headers.get("x-forwarded-for");
-  if (xff) {
-    const first = xff.split(",")[0]?.trim();
-    if (first) return first;
+  // x-forwarded-for: trust only when running on a known platform that
+  // overwrites the leftmost entry (Vercel does this). On Vercel, VERCEL=1
+  // is set automatically by the build environment.
+  const onVercel = !!process.env.VERCEL;
+  if (onVercel || TRUST_CF || TRUST_XREALIP) {
+    const xff = req.headers.get("x-forwarded-for");
+    if (xff) {
+      const first = xff.split(",")[0]?.trim();
+      if (first) return first;
+    }
   }
 
   if (process.env.NODE_ENV === "production") {
-    // Prod proxy misconfiguration — loud warning, granular fallback
     console.warn(
-      "[guest-gallery] WARNING: no client IP header present in production. " +
-        "Check reverse proxy / Vercel headers configuration. " +
-        "Falling back to per-request random key (rate limit disabled for this request).",
+      "[client-ip] WARNING: no trusted IP header in production. Set " +
+        "TRUST_CF_HEADER=1 (Cloudflare), TRUST_XREALIP=1 (nginx), or run on " +
+        "Vercel (auto-detected). Falling back to per-request random key — " +
+        "rate limit disabled for this request.",
     );
-    // Per-request random — effectively disables rate limit but doesn't
-    // let an attacker poison the shared bucket.
     return `noip-${crypto.randomUUID()}`;
   }
 

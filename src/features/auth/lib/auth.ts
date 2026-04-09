@@ -46,19 +46,22 @@ export const auth = betterAuth({
   },
   rateLimit: {
     enabled: true,
+    // DB-backed storage so limits persist across Edge isolates and cold
+    // starts (in-memory default would be per-instance only on Vercel).
+    storage: "database",
     // Default fallback for any auth endpoint not explicitly listed below
     window: 60,
     max: 30,
     customRules: {
-      // Login: 10 attempts per minute per IP. Brute force protection without
-      // blocking legit users who fat-fingered their password a few times.
-      "/sign-in/email": { window: 60, max: 10 },
+      // Login: aligned with the loginLimiter at the edge (10 / 5 minutes).
+      // Better Auth provides defense in depth here; the edge limiter is the
+      // primary control.
+      "/sign-in/email": { window: 5 * 60, max: 10 },
       // Sign-up: 5 per 10 minutes per IP. Stops automated account creation.
       "/sign-up/email": { window: 10 * 60, max: 5 },
-      // Password reset request via Better Auth's own endpoint (in case it's
-      // hit directly instead of through our checkEmailAndRequestReset action,
-      // which has its own limiter). 3 / 15min per IP.
-      "/forget-password": { window: 15 * 60, max: 3 },
+      // Password reset request via Better Auth's actual endpoint name.
+      // (The /forget-password path that earlier docs suggested does not
+      // exist in better-auth — verified in node_modules/better-auth source.)
       "/request-password-reset": { window: 15 * 60, max: 3 },
     },
   },

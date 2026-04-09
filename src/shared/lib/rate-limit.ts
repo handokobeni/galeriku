@@ -64,8 +64,14 @@ export const favoriteLimiter = createRateLimiter({ limit: 120, windowMs: 60_000 
 // Studio auth limiters — tighter than guest gallery because the threat model
 // includes credential brute force on owner/admin accounts and email
 // enumeration on the forgot-password endpoint.
+//
+// Forgot-password: 1 attempt per 15 min per IP. Tight on purpose because
+// the form returns "Email not found" for missing accounts (we kept the UX
+// over always-success), so the rate limit is the primary defense against
+// enumeration. 1/15min × 96 windows/day = 96 attempts/day per IP, vs ~73k
+// at the previous 3/15min × 256-IP /24 — that earlier value was too lax.
 export const forgotPasswordLimiter = createRateLimiter({
-  limit: 3,
+  limit: 1,
   windowMs: 15 * 60_000,
 });
 
