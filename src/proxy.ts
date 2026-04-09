@@ -24,8 +24,22 @@ const PUBLIC_PATHS = [
   "/g/", // guest gallery sub-app — has its own auth via signed cookies
 ];
 
+// Public files served from /public — must NOT be auth-gated.
+const PUBLIC_FILES = [
+  "/sw.js",
+  "/swe-worker-development.js",
+  "/manifest.json",
+  "/robots.txt",
+  "/sitemap.xml",
+];
+
 function isPublicPath(pathname: string): boolean {
   if (pathname === "/") return true;
+  if (PUBLIC_FILES.includes(pathname)) return true;
+  // Treat any root-level static asset (.js, .css, .png, .ico, .webmanifest, etc) as public
+  if (/^\/[^/]+\.(js|css|map|png|jpg|jpeg|svg|webp|ico|json|txt|xml|webmanifest)$/.test(pathname)) {
+    return true;
+  }
   return PUBLIC_PATHS.some((path) => pathname.startsWith(path));
 }
 
