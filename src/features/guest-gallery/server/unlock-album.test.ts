@@ -57,12 +57,12 @@ describe("unlockAlbum", () => {
     if (!r.ok) expect(r.reason).toBe("not-found");
   });
 
-  it("rate-limits after 5 attempts", async () => {
+  it("rate-limits after 10 attempts", async () => {
     const ph = await hash("hunter2");
     await db.insert(album).values({
       name: "X", slug: "unl12-z", isPublic: true, passwordHash: ph, createdBy: userId,
     });
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 10; i++) {
       await unlockAlbum({ slug: "unl12-z", password: "WRONG", clientKey: "ratekey" });
     }
     const r = await unlockAlbum({ slug: "unl12-z", password: "hunter2", clientKey: "ratekey" });
@@ -70,12 +70,12 @@ describe("unlockAlbum", () => {
     if (!r.ok) expect(r.reason).toBe("rate-limited");
   });
 
-  it("4 wrong attempts followed by correct password still succeeds (only failures counted)", async () => {
+  it("9 wrong attempts followed by correct password still succeeds (only failures counted)", async () => {
     const ph = await hash("hunter2");
     await db.insert(album).values({
       name: "X", slug: "unl12-pre", isPublic: true, passwordHash: ph, createdBy: userId,
     });
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 9; i++) {
       const r = await unlockAlbum({ slug: "unl12-pre", password: "WRONG", clientKey: "preok" });
       expect(r.ok).toBe(false);
     }
@@ -88,21 +88,21 @@ describe("unlockAlbum", () => {
     await db.insert(album).values({
       name: "X", slug: "unl12-reset", isPublic: true, passwordHash: ph, createdBy: userId,
     });
-    // 3 failures
-    for (let i = 0; i < 3; i++) {
+    // 5 failures (half of budget)
+    for (let i = 0; i < 5; i++) {
       await unlockAlbum({ slug: "unl12-reset", password: "WRONG", clientKey: "resetkey" });
     }
     // Success should clear the bucket
     const ok = await unlockAlbum({ slug: "unl12-reset", password: "hunter2", clientKey: "resetkey" });
     expect(ok.ok).toBe(true);
 
-    // Now we should have a fresh budget — 5 more wrong attempts allowed
-    for (let i = 0; i < 5; i++) {
+    // Now we should have a fresh budget — 10 more wrong attempts allowed
+    for (let i = 0; i < 10; i++) {
       const r = await unlockAlbum({ slug: "unl12-reset", password: "WRONG", clientKey: "resetkey" });
       expect(r.ok).toBe(false);
       if (!r.ok) expect(r.reason).toBe("wrong-password");
     }
-    // 6th attempt now blocked
+    // 11th attempt now blocked
     const blocked = await unlockAlbum({ slug: "unl12-reset", password: "WRONG", clientKey: "resetkey" });
     expect(blocked.ok).toBe(false);
     if (!blocked.ok) expect(blocked.reason).toBe("rate-limited");
@@ -114,7 +114,7 @@ describe("unlockAlbum", () => {
     await db.insert(album).values({
       name: "X", slug: "unl12-leak", isPublic: true, passwordHash: ph, createdBy: userId,
     });
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 11; i++) {
       await unlockAlbum({ slug: "unl12-leak", password: "WRONG", clientKey: "leakkey" });
     }
     // Now request a slug that doesn't exist with the same client key

@@ -53,6 +53,10 @@ export function createRateLimiter(opts: { limit: number; windowMs: number }): Ra
   };
 }
 
-export const unlockLimiter = createRateLimiter({ limit: 5, windowMs: 15 * 60_000 });
-export const guestRegisterLimiter = createRateLimiter({ limit: 3, windowMs: 60 * 60_000 });
-export const favoriteLimiter = createRateLimiter({ limit: 60, windowMs: 60_000 });
+// Tuned for non-technical wedding clients on mobile (older relatives, typos
+// on small keypads). Brute force is not the threat model here — passwords
+// are 6+ char random shared via WhatsApp, billions of combinations. The
+// limiter exists for spam/DoS protection, so values lean lenient.
+export const unlockLimiter = createRateLimiter({ limit: 10, windowMs: 5 * 60_000 });
+export const guestRegisterLimiter = createRateLimiter({ limit: 5, windowMs: 30 * 60_000 });
+export const favoriteLimiter = createRateLimiter({ limit: 120, windowMs: 60_000 });
