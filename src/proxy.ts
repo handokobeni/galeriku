@@ -14,18 +14,35 @@ const RATE_LIMITED_AUTH_ROUTES: Record<string, RateLimiter> = {
   "/api/auth/sign-up/email": signupLimiter,
 };
 
+const PUBLIC_PATHS = [
+  "/login",
+  "/register",
+  "/setup",
+  "/forgot-password",
+  "/reset-password",
+  "/api/auth",
+  "/g/", // guest gallery sub-app — has its own auth via signed cookies
+];
+
+function isPublicPath(pathname: string): boolean {
+  if (pathname === "/") return true;
+  return PUBLIC_PATHS.some((path) => pathname.startsWith(path));
+}
+
 export function proxy(request: NextRequest) {
-  // ───── Auth rate limiting ─────
+  const { pathname } = request.nextUrl;
+
+  // ───── 1. Auth endpoint rate limiting ─────
   if (request.method === "POST") {
-    const path = request.nextUrl.pathname;
-    const limiter = RATE_LIMITED_AUTH_ROUTES[path];
+    const limiter = RATE_LIMITED_AUTH_ROUTES[pathname];
     if (limiter) {
       const clientKey = getClientKey(request);
-      const key = `${path}:${clientKey}`;
+      const key = `${pathname}:${clientKey}`;
       if (!limiter.check(key)) {
         return new NextResponse(
           JSON.stringify({
-            error: "Too many attempts. Please try again in a few minutes.",
+            message: "Too many attempts. Please try again in a few minutes.",
+            code: "RATE_LIMITED",
           }),
           {
             status: 429,
@@ -39,7 +56,22 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  // ───── Existing CSP nonce flow ─────
+  // ───── 2. Auth gating for studio routes ─────
+  // Lightweight cookie-presence check; actual session validation happens
+  // server-side in (main)/layout.tsx via auth.api.getSession().
+  if (!isPublicPath(pathname)) {
+    const sessionCookie =
+      request.cookies.get("better-auth.session_token") ??
+      request.cookies.get("__Secure-better-auth.session_token");
+
+    if (!sessionCookie) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // ───── 3. CSP nonce for HTML responses ─────
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const isDev = process.env.NODE_ENV === "development";
 
@@ -73,3 +105,11 @@ export function proxy(request: NextRequest) {
 
   return response;
 }
+
+// Match all paths except static assets — same exclusions as the deprecated
+// middleware.ts had. This file replaces middleware.ts entirely.
+export const config = {
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icons|manifest.json).*)",
+  ],
+};
