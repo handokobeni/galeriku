@@ -24,11 +24,10 @@ const serwist = new Serwist({
       }),
     },
     {
-      matcher: ({ url }) =>
-        url.hostname.includes("r2.cloudflarestorage.com") ||
-        (process.env.NEXT_PUBLIC_R2_HOST
-          ? url.hostname.includes(process.env.NEXT_PUBLIC_R2_HOST)
-          : false),
+      // `process` is not available in service worker scope. We can rely
+      // on the wildcard r2.cloudflarestorage.com check alone — it covers
+      // all R2 buckets including custom subdomains.
+      matcher: ({ url }) => url.hostname.endsWith(".r2.cloudflarestorage.com"),
       handler: new CacheFirst({
         cacheName: "gallery-images",
         plugins: [

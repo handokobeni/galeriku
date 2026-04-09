@@ -68,22 +68,34 @@ export function proxy(request: NextRequest) {
   const isDev = process.env.NODE_ENV === "development";
 
   // R2 presigned URLs include the bucket as a subdomain
-  // (e.g. bucket.account-id.r2.cloudflarestorage.com). For img/media we
-  // whitelist the wildcard because URLs vary by bucket+account. For
-  // connect-src we narrow to a specific bucket host (R2_BUCKET_HOST env)
-  // to limit script-driven exfil to attacker-controlled buckets.
+  // (e.g. bucket.account-id.r2.cloudflarestorage.com). Bucket+account combo
+  // varies, so we whitelist via wildcard for img/media/connect. R2_BUCKET_HOST
+  // env can narrow connect-src further when set, but defaults to wildcard
+  // so the gallery actually works out of the box.
   const r2Wildcard = "https://*.r2.cloudflarestorage.com";
   const r2ImgAllow = [r2Wildcard, R2_DOMAIN].filter(Boolean).join(" ");
-  const r2ConnectAllow = [R2_BUCKET_HOST, R2_DOMAIN].filter(Boolean).join(" ") || r2Wildcard;
+  const r2ConnectAllow = R2_BUCKET_HOST
+    ? [R2_BUCKET_HOST, R2_DOMAIN].filter(Boolean).join(" ")
+    : [r2Wildcard, R2_DOMAIN].filter(Boolean).join(" ");
+
+  // Style-src needs 'unsafe-inline' for both dev and prod because:
+  //  - Tailwind v4 inlines critical CSS
+  //  - shadcn/ui components inject style attributes for animations
+  //  - Next.js streams inline <style> blocks for FOUC prevention
+  // Pure nonce-only style-src would require refactoring all of those.
+  // Style-based attacks are limited (can't run JS) so this is an
+  // accepted tradeoff. Script-src is still strict nonce-only.
+  const styleSrc = "'self' 'unsafe-inline'";
 
   const cspHeader = `
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ""};
-    style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`};
+    style-src ${styleSrc};
     font-src 'self' https://fonts.gstatic.com;
     img-src 'self' blob: data: ${r2ImgAllow} https://images.unsplash.com;
     media-src 'self' blob: ${r2ImgAllow};
     connect-src 'self' ${r2ConnectAllow};
+    worker-src 'self' blob:;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
