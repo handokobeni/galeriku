@@ -90,14 +90,21 @@ export function proxy(request: NextRequest) {
   const nonce = btoa(crypto.randomUUID());
   const isDev = process.env.NODE_ENV === "development";
 
+  // R2 presigned URLs include the bucket as a subdomain
+  // (e.g. bucket.account-id.r2.cloudflarestorage.com), so we whitelist
+  // the entire r2.cloudflarestorage.com domain via wildcard. R2_DOMAIN
+  // env var (if set) is also allowed for custom-domain setups.
+  const r2Wildcard = "https://*.r2.cloudflarestorage.com";
+  const r2Allow = [r2Wildcard, R2_DOMAIN].filter(Boolean).join(" ");
+
   const cspHeader = `
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ""};
     style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`};
     font-src 'self' https://fonts.gstatic.com;
-    img-src 'self' blob: data: ${R2_DOMAIN} https://images.unsplash.com;
-    media-src 'self' blob: ${R2_DOMAIN};
-    connect-src 'self' ${R2_DOMAIN};
+    img-src 'self' blob: data: ${r2Allow} https://images.unsplash.com;
+    media-src 'self' blob: ${r2Allow};
+    connect-src 'self' ${r2Allow};
     object-src 'none';
     base-uri 'self';
     form-action 'self';
