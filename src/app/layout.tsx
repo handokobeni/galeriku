@@ -51,7 +51,6 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${fraunces.variable} ${jakarta.variable} font-sans`}
-        nonce={nonce}
       >
         <ThemeProvider nonce={nonce}>
           {children}
