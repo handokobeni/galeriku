@@ -34,7 +34,13 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
     });
 
     if (signInError) {
-      setError("Invalid email or password");
+      // Distinguish rate-limit (429) from wrong credentials (401) so users
+      // know to wait instead of repeatedly retrying.
+      if (signInError.status === 429) {
+        setError("Too many login attempts. Please wait a few minutes and try again.");
+      } else {
+        setError("Invalid email or password");
+      }
       setPending(false);
       return;
     }
