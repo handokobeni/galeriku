@@ -37,16 +37,27 @@ export async function renderTextWatermark(
   const estimatedWidth = Math.ceil(escaped.length * fontSize * 0.6) + padding * 2;
   const height = fontSize + padding * 2;
 
+  // White text with dark shadow — visible on both light and dark photos.
+  // Drop shadow via duplicate text offset by 2px in dark color, then
+  // white text on top. Standard watermark technique.
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${estimatedWidth}" height="${height}">
+    <defs>
+      <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+        <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="rgba(0,0,0,0.7)"/>
+      </filter>
+    </defs>
     <text
       x="50%"
       y="50%"
       dominant-baseline="central"
       text-anchor="middle"
       font-family="Arial, sans-serif"
+      font-weight="bold"
       font-size="${fontSize}"
       fill="white"
-      opacity="1"
+      stroke="rgba(0,0,0,0.3)"
+      stroke-width="1"
+      filter="url(#shadow)"
     >${escaped}</text>
   </svg>`;
 
