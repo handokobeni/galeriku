@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSessionWithRole } from "@/features/auth/lib/session";
 import { previewWatermark } from "@/features/watermark/server/preview-watermark";
 import { db } from "@/db";
-import { media } from "@/db/schema";
+import { album, media } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getObject } from "@/shared/lib/r2";
 
@@ -24,6 +24,19 @@ export async function POST(req: Request) {
 
   if (!albumId) {
     return NextResponse.json({ error: "albumId required" }, { status: 400 });
+  }
+
+  // Verify the user owns this album
+  const [albumRow] = await db
+    .select({ createdBy: album.createdBy })
+    .from(album)
+    .where(eq(album.id, albumId))
+    .limit(1);
+  if (!albumRow) {
+    return NextResponse.json({ error: "Album not found" }, { status: 404 });
+  }
+  if (albumRow.createdBy !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // If no mediaId provided, pick the first photo in the album
@@ -54,7 +67,7 @@ export async function POST(req: Request) {
     const jpegBuffer = await previewWatermark({
       db,
       albumId,
-      mediaId: targetR2Key,
+      fotoR2Key: targetR2Key,
       fetchR2,
     });
 

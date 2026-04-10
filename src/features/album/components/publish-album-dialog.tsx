@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback } from "react";
+import { useState, useTransition, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,8 +56,16 @@ export function PublishAlbumDialog({
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<WatermarkJobStatus | null>(null);
 
-  // Poll watermark job status
+  // Poll watermark job status — timeout after 5 minutes per spec
+  const pollStartRef = useRef<number>(0);
+  const POLL_TIMEOUT_MS = 5 * 60 * 1000;
+
   const pollJob = useCallback(async (id: string) => {
+    if (Date.now() - pollStartRef.current > POLL_TIMEOUT_MS) {
+      setJobStatus({ total: 0, done: 0, status: "failed", skipped: [] });
+      setError("Watermark generation taking too long. Try re-publishing.");
+      return;
+    }
     try {
       const res = await fetch(`/api/watermark/status/${id}`);
       if (!res.ok) return;
@@ -67,13 +75,13 @@ export function PublishAlbumDialog({
         setTimeout(() => pollJob(id), 2000);
       }
     } catch {
-      // Silently retry
       setTimeout(() => pollJob(id), 3000);
     }
   }, []);
 
   useEffect(() => {
     if (jobId) {
+      pollStartRef.current = Date.now();
       pollJob(jobId);
     }
   }, [jobId, pollJob]);

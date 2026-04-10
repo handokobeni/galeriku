@@ -6,9 +6,14 @@ const MAX_TEXT_LENGTH = 100;
  * Render text string to a PNG buffer with transparent background.
  * Used as watermark input when mode is "text".
  */
+/**
+ * Note: opacity is NOT applied here — it is handled by compositeWatermark()
+ * which applies uniform opacity to the final composited watermark layer.
+ * This function renders the text at full opacity so the composite pipeline
+ * has a clean alpha to work with.
+ */
 export async function renderTextWatermark(
   text: string,
-  _opts: { opacity?: number; scale?: number },
 ): Promise<Buffer> {
   const trimmed = text.trim();
   if (!trimmed) {
@@ -41,7 +46,7 @@ export async function renderTextWatermark(
       font-family="Arial, sans-serif"
       font-size="${fontSize}"
       fill="white"
-      opacity="0.9"
+      opacity="1"
     >${escaped}</text>
   </svg>`;
 

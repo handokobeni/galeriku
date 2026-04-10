@@ -53,7 +53,6 @@ export async function POST(req: Request) {
   const result = await uploadLogo({
     buffer,
     studioId: session.user.id,
-    db,
     r2Upload,
     r2Delete: deleteObject,
     oldLogoR2Key,

@@ -10,15 +10,15 @@ import type { Database } from "@/db";
 export async function previewWatermark(input: {
   db: Database;
   albumId: string;
-  mediaId: string;
+  fotoR2Key: string;
   fetchR2: (key: string) => Promise<Buffer>;
 }): Promise<Buffer> {
-  const { db, albumId, mediaId, fetchR2 } = input;
+  const { db, albumId, fotoR2Key, fetchR2 } = input;
 
   const config = await getWatermarkConfig(db, albumId);
 
   // Fetch the foto
-  const fotoBuffer = await fetchR2(mediaId);
+  const fotoBuffer = await fetchR2(fotoR2Key);
 
   // Get watermark source
   let watermarkBuffer: Buffer;
@@ -28,10 +28,7 @@ export async function previewWatermark(input: {
     }
     watermarkBuffer = await fetchR2(config.logoR2Key);
   } else {
-    watermarkBuffer = await renderTextWatermark(config.text, {
-      opacity: config.opacity,
-      scale: config.scale,
-    });
+    watermarkBuffer = await renderTextWatermark(config.text);
   }
 
   return compositeWatermark(fotoBuffer, watermarkBuffer, config);

@@ -7,6 +7,14 @@ import type { Database } from "@/db";
 
 const PREVIEW_WIDTH = 1200;
 
+async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch {
+    return fn(); // 1 retry per spec
+  }
+}
+
 type MediaItem = {
   id: string;
   r2Key: string;
@@ -45,10 +53,7 @@ export async function generateWatermarks(input: {
     }
     watermarkBuffer = await fetchR2(config.logoR2Key);
   } else {
-    watermarkBuffer = await renderTextWatermark(config.text, {
-      opacity: config.opacity,
-      scale: config.scale,
-    });
+    watermarkBuffer = await renderTextWatermark(config.text);
   }
 
   for (const item of mediaItems) {
@@ -66,8 +71,8 @@ export async function generateWatermarks(input: {
       // Upload both to R2
       const fullKey = `watermarked/${albumId}/${item.id}-full.jpg`;
       const previewKey = `watermarked/${albumId}/${item.id}-preview.jpg`;
-      await uploadR2(fullKey, watermarkedFull, "image/jpeg");
-      await uploadR2(previewKey, watermarkedPreview, "image/jpeg");
+      await withRetry(() => uploadR2(fullKey, watermarkedFull, "image/jpeg"));
+      await withRetry(() => uploadR2(previewKey, watermarkedPreview, "image/jpeg"));
 
       // Update media.variants
       await updateVariants(item.id, {

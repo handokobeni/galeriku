@@ -44,7 +44,7 @@ describe("previewWatermark", () => {
     const result = await previewWatermark({
       db: mockDb,
       albumId: "album-1",
-      mediaId: "media-1",
+      fotoR2Key: "media-1",
       fetchR2: mockFetchR2,
     });
 
@@ -70,15 +70,12 @@ describe("previewWatermark", () => {
     const result = await previewWatermark({
       db: mockDb,
       albumId: "album-1",
-      mediaId: "media-1",
+      fotoR2Key: "media-1",
       fetchR2: mockFetchR2,
     });
 
     expect(Buffer.isBuffer(result)).toBe(true);
-    expect(renderTextWatermark).toHaveBeenCalledWith("My Studio", {
-      opacity: 50,
-      scale: 25,
-    });
+    expect(renderTextWatermark).toHaveBeenCalledWith("My Studio");
   });
 
   it("throws when mode=logo but no logoR2Key", async () => {
@@ -96,7 +93,7 @@ describe("previewWatermark", () => {
       previewWatermark({
         db: mockDb,
         albumId: "album-1",
-        mediaId: "media-1",
+        fotoR2Key: "media-1",
         fetchR2: mockFetchR2,
       }),
     ).rejects.toThrow("No logo uploaded");
@@ -117,7 +114,7 @@ describe("previewWatermark", () => {
       previewWatermark({
         db: mockDb,
         albumId: "album-1",
-        mediaId: "media-1",
+        fotoR2Key: "media-1",
         fetchR2: mockFetchR2,
       }),
     ).rejects.toThrow("R2 fetch failed");

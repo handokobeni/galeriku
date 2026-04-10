@@ -20,31 +20,31 @@ describe("renderTextWatermark", () => {
   });
 
   it("throws on empty text", async () => {
-    await expect(renderTextWatermark("", {})).rejects.toThrow(
+    await expect(renderTextWatermark("")).rejects.toThrow(
       "text cannot be empty"
     );
   });
 
   it("throws on whitespace-only text", async () => {
-    await expect(renderTextWatermark("   ", {})).rejects.toThrow(
+    await expect(renderTextWatermark("   ")).rejects.toThrow(
       "text cannot be empty"
     );
   });
 
   it("truncates text longer than 100 characters", async () => {
     const long = "A".repeat(150);
-    const result = await renderTextWatermark(long, {});
+    const result = await renderTextWatermark(long);
     expect(Buffer.isBuffer(result)).toBe(true);
   });
 
   it("returns a PNG buffer for valid text", async () => {
-    const result = await renderTextWatermark("Studio XYZ", {});
+    const result = await renderTextWatermark("Studio XYZ");
     expect(Buffer.isBuffer(result)).toBe(true);
   });
 
   it("passes text to sharp via SVG input", async () => {
     const { default: sharp } = await import("sharp");
-    await renderTextWatermark("My Studio", {});
+    await renderTextWatermark("My Studio");
     const call = vi.mocked(sharp).mock.calls[0];
     const input = call[0];
     expect(Buffer.isBuffer(input)).toBe(true);

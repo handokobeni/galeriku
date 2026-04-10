@@ -16,7 +16,6 @@ export type UploadLogoResult =
 export async function uploadLogo(input: {
   buffer: Buffer;
   studioId: string;
-  db: any;
   r2Upload: (key: string, buffer: Buffer, contentType: string) => Promise<void>;
   r2Delete: (key: string) => Promise<void>;
   oldLogoR2Key: string | null;
@@ -40,8 +39,9 @@ export async function uploadLogo(input: {
   }
 
   const width = meta.width ?? 0;
-  if (width < MIN_DIMENSION) {
-    return { ok: false, reason: "Logo too small (minimum 100px)" };
+  const height = meta.height ?? 0;
+  if (width < MIN_DIMENSION || height < MIN_DIMENSION) {
+    return { ok: false, reason: "Logo too small (minimum 100×100px)" };
   }
 
   // 4. Auto-resize if > 2000px

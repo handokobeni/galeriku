@@ -40,15 +40,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ slug: string; 
 
   const variants = m.variants ?? {};
   // 'clean'      → original (m.r2Key)
-  // 'watermarked'→ variants.watermarkedFull
-  //
-  // ⚠️ C2 NOT YET IMPLEMENTED: the watermark generation pipeline that
-  // populates `variants.watermarkedFull` is the C2 sub-project (out of
-  // scope for C1). Until C2 ships, we fall back to the original file —
-  // photographers who select "watermarked" will currently deliver clean
-  // images. This is documented in the spec's "Out of Scope" section.
-  // When C2 lands, no change needed here: the variant key will simply
-  // start resolving.
+  // 'watermarked'→ variants.watermarkedFull (populated by C2 watermark engine)
+  // Falls back to original if variant not yet generated.
   let key: string;
   if (variantKey === "original") {
     key = m.r2Key;

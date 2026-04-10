@@ -6,7 +6,7 @@ import fs from "node:fs";
 
 const sql = postgres(
   process.env.DATABASE_URL ||
-    "postgresql://postgres:postgres@localhost:57432/galeriku?sslmode=disable",
+    "postgresql://postgres:postgres@localhost:57432/galeriku_test?sslmode=disable",
 );
 
 let albumSlug: string;

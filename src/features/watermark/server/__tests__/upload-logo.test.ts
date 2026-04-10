@@ -37,14 +37,8 @@ describe("uploadLogo", () => {
   const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const validPng = Buffer.concat([PNG_MAGIC, Buffer.alloc(100)]);
 
-  const mockDb = {
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockResolvedValue([]),
-    insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockReturnThis(),
-    onConflictDoUpdate: vi.fn().mockReturnThis(),
-    set: vi.fn().mockResolvedValue([]),
+  // mockDb removed — upload-logo no longer takes db param (review fix #2)
+  const _unused = {
   } as any;
 
   const mockR2Upload = vi.fn().mockResolvedValue(undefined);
@@ -60,7 +54,7 @@ describe("uploadLogo", () => {
     const result = await uploadLogo({
       buffer: jpegBuffer,
       studioId: "studio-1",
-      db: mockDb,
+
       r2Upload: mockR2Upload,
       r2Delete: vi.fn(),
       oldLogoR2Key: null,
@@ -74,7 +68,7 @@ describe("uploadLogo", () => {
     const result = await uploadLogo({
       buffer: bigBuffer,
       studioId: "studio-1",
-      db: mockDb,
+
       r2Upload: mockR2Upload,
       r2Delete: vi.fn(),
       oldLogoR2Key: null,
@@ -88,7 +82,7 @@ describe("uploadLogo", () => {
     const result = await uploadLogo({
       buffer: validPng,
       studioId: "studio-1",
-      db: mockDb,
+
       r2Upload: mockR2Upload,
       r2Delete: vi.fn(),
       oldLogoR2Key: null,
@@ -102,7 +96,7 @@ describe("uploadLogo", () => {
     const result = await uploadLogo({
       buffer: validPng,
       studioId: "studio-1",
-      db: mockDb,
+
       r2Upload: mockR2Upload,
       r2Delete: vi.fn(),
       oldLogoR2Key: null,
@@ -115,7 +109,7 @@ describe("uploadLogo", () => {
     const result = await uploadLogo({
       buffer: validPng,
       studioId: "studio-1",
-      db: mockDb,
+
       r2Upload: mockR2Upload,
       r2Delete: vi.fn(),
       oldLogoR2Key: null,
@@ -131,7 +125,7 @@ describe("uploadLogo", () => {
     await uploadLogo({
       buffer: validPng,
       studioId: "studio-1",
-      db: mockDb,
+
       r2Upload: mockR2Upload,
       r2Delete,
       oldLogoR2Key: "watermarks/studio-1/logo-old.png",
@@ -144,7 +138,7 @@ describe("uploadLogo", () => {
     await uploadLogo({
       buffer: validPng,
       studioId: "studio-1",
-      db: mockDb,
+
       r2Upload: mockR2Upload,
       r2Delete,
       oldLogoR2Key: null,

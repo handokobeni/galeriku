@@ -46,6 +46,7 @@ vi.mock("@/db", () => ({
 // Mock db schema
 vi.mock("@/db/schema", () => ({
   appSettings: { key: "key" },
+  album: { id: "id", createdBy: "created_by" },
   media: { id: "id", albumId: "album_id", r2Key: "r2_key" },
 }));
 
@@ -210,7 +211,11 @@ describe("watermark API routes", () => {
     });
 
     it("returns 404 when no media found", async () => {
-      vi.mocked(db.limit as any).mockResolvedValue([]);
+      // First limit() = album ownership check → found
+      // Second limit() = media lookup → not found
+      vi.mocked(db.limit as any)
+        .mockResolvedValueOnce([{ createdBy: "user-1" }])
+        .mockResolvedValueOnce([]);
 
       const { POST } = await import("@/app/api/watermark/preview/route");
       const req = new Request("http://localhost/api/watermark/preview", {
@@ -223,9 +228,11 @@ describe("watermark API routes", () => {
     });
 
     it("returns image/jpeg when preview succeeds", async () => {
-      vi.mocked(db.limit as any).mockResolvedValue([
-        { id: "media-1", albumId: "album-1", r2Key: "albums/a1/media-1.jpg" },
-      ]);
+      vi.mocked(db.limit as any)
+        .mockResolvedValueOnce([{ createdBy: "user-1" }])
+        .mockResolvedValueOnce([
+          { id: "media-1", albumId: "album-1", r2Key: "albums/a1/media-1.jpg" },
+        ]);
       vi.mocked(previewWatermark).mockResolvedValue(Buffer.from("jpeg-data"));
 
       const { POST } = await import("@/app/api/watermark/preview/route");
@@ -240,9 +247,11 @@ describe("watermark API routes", () => {
     });
 
     it("returns 500 when preview fails", async () => {
-      vi.mocked(db.limit as any).mockResolvedValue([
-        { id: "media-1", albumId: "album-1", r2Key: "albums/a1/media-1.jpg" },
-      ]);
+      vi.mocked(db.limit as any)
+        .mockResolvedValueOnce([{ createdBy: "user-1" }])
+        .mockResolvedValueOnce([
+          { id: "media-1", albumId: "album-1", r2Key: "albums/a1/media-1.jpg" },
+        ]);
       vi.mocked(previewWatermark).mockRejectedValue(new Error("No logo uploaded"));
 
       const { POST } = await import("@/app/api/watermark/preview/route");
