@@ -36,6 +36,13 @@
       "when": 1775636552503,
       "tag": "0004_wise_fixer",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1775803169523,
+      "tag": "0005_woozy_loa",
+      "breakpoints": true
     }
   ]
 }

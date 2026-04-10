@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text, timestamp, uuid, primaryKey, index, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, primaryKey, index, boolean, jsonb } from "drizzle-orm/pg-core";
 import { user } from "./user";
+import type { WatermarkConfig } from "@/features/watermark/lib/config";
 
 export const album = pgTable("album", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -16,6 +17,7 @@ export const album = pgTable("album", {
   downloadPolicy: text("download_policy", { enum: ["none", "watermarked", "clean"] })
     .default("none")
     .notNull(),
+  watermarkOverride: jsonb("watermark_override").$type<Partial<WatermarkConfig>>(),
   publishedAt: timestamp("published_at"),
   expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
