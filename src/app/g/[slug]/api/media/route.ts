@@ -32,6 +32,7 @@ export async function GET(req: Request, ctx: { params: Promise<{ slug: string }>
   const presigned = await batchPresignUrls(
     page.items.map((m) => ({ id: m.id, r2Key: m.r2Key, thumbnailR2Key: m.thumbnailR2Key, variants: m.variants ?? {} })),
     ttl,
+    found.album.downloadPolicy,
   );
   const items = page.items.map((m) => ({
     id: m.id,

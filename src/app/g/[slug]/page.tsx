@@ -59,6 +59,7 @@ export default async function GuestGalleryPage({
       variants: m.variants ?? {},
     })),
     60 * 60,
+    found.album.downloadPolicy,
   );
   const initialPhotos = page.items.map((m) => ({
     id: m.id,
