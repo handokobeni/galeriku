@@ -7,6 +7,7 @@ import {
   Heart,
   Search,
   Settings,
+  Droplets,
   LogOut,
   Sparkles,
 } from "lucide-react";
@@ -25,6 +26,7 @@ const primaryLinks = [
   { href: "/albums", label: "Albums", icon: LayoutGrid, num: "01" },
   { href: "/favorites", label: "Favorites", icon: Heart, num: "02" },
   { href: "/search", label: "Search", icon: Search, num: "03" },
+  { href: "/settings", label: "Watermark", icon: Droplets, num: "04" },
 ];
 
 export function Sidebar({ user }: SidebarProps) {

@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Heart, Search, Settings } from "lucide-react";
+import { LayoutGrid, Heart, Search, Settings, Droplets } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/albums", icon: LayoutGrid, label: "Albums" },
   { href: "/favorites", icon: Heart, label: "Favorites" },
-  { href: "/search", icon: Search, label: "Search" },
+  { href: "/settings", icon: Droplets, label: "Watermark" },
   { href: "/admin", icon: Settings, label: "Admin", ownerOnly: true },
 ];
 
