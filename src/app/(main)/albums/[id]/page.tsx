@@ -43,6 +43,9 @@ export default async function AlbumDetailPage({ params }: AlbumDetailPageProps) 
       canEdit={hasEditAccess}
       canManage={canManage}
       currentUserId={session.user.id}
+      isPublished={albumData.isPublic}
+      downloadPolicy={albumData.downloadPolicy}
+      slug={albumData.slug}
     />
   );
 }
