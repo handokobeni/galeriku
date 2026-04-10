@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       fetchR2,
     });
 
-    return new NextResponse(jpegBuffer, {
+    return new NextResponse(new Uint8Array(jpegBuffer), {
       status: 200,
       headers: {
         "Content-Type": "image/jpeg",

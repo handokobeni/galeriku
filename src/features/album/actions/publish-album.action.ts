@@ -20,7 +20,7 @@ export async function publishAlbumAction(input: {
       downloadPolicy: input.downloadPolicy,
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
     });
-    if (r.ok) return { ok: true as const, slug: r.slug };
+    if (r.ok) return { ok: true as const, slug: r.slug, jobId: r.jobId };
     if (r.reason === "forbidden") {
       return { ok: false as const, reason: "Only the album creator can publish this album" };
     }

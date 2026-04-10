@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,14 @@ import { Share2, Copy, Check } from "lucide-react";
 
 type DownloadPolicy = "none" | "watermarked" | "clean";
 
+type WatermarkJobStatus = {
+  total: number;
+  done: number;
+  status: "processing" | "completed" | "failed";
+  error?: string;
+  skipped: string[];
+};
+
 export function PublishAlbumDialog({
   albumId,
   onPublish,
@@ -33,7 +41,7 @@ export function PublishAlbumDialog({
     password: string;
     downloadPolicy: DownloadPolicy;
     expiresAt: string | null;
-  }) => Promise<{ ok: boolean; slug?: string; reason?: string }>;
+  }) => Promise<{ ok: boolean; slug?: string; reason?: string; jobId?: string }>;
 }) {
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -43,6 +51,32 @@ export function PublishAlbumDialog({
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Watermark progress state
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<WatermarkJobStatus | null>(null);
+
+  // Poll watermark job status
+  const pollJob = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/watermark/status/${id}`);
+      if (!res.ok) return;
+      const data: WatermarkJobStatus = await res.json();
+      setJobStatus(data);
+      if (data.status === "processing") {
+        setTimeout(() => pollJob(id), 2000);
+      }
+    } catch {
+      // Silently retry
+      setTimeout(() => pollJob(id), 3000);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (jobId) {
+      pollJob(jobId);
+    }
+  }, [jobId, pollJob]);
 
   function submit() {
     setError(null);
@@ -55,6 +89,9 @@ export function PublishAlbumDialog({
       });
       if (r.ok && r.slug) {
         setLink(`${window.location.origin}/g/${r.slug}`);
+        if (r.jobId) {
+          setJobId(r.jobId);
+        }
       } else {
         setError(r.reason || "Gagal publish album. Coba lagi.");
       }
@@ -75,7 +112,15 @@ export function PublishAlbumDialog({
     setExpires("");
     setError(null);
     setCopied(false);
+    setJobId(null);
+    setJobStatus(null);
   }
+
+  const progressPct = jobStatus
+    ? jobStatus.total > 0
+      ? Math.round((jobStatus.done / jobStatus.total) * 100)
+      : 100
+    : 0;
 
   return (
     <Dialog
@@ -104,6 +149,35 @@ export function PublishAlbumDialog({
 
         {link ? (
           <div className="space-y-4">
+            {/* Watermark progress bar */}
+            {jobId && jobStatus && jobStatus.status === "processing" && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Generating watermark {jobStatus.done}/{jobStatus.total}...
+                </p>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-300"
+                    style={{ width: `${progressPct}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {jobId && jobStatus && jobStatus.status === "completed" && (
+              <p className="text-sm text-green-600">
+                Watermark generation complete ({jobStatus.done} photos).
+                {jobStatus.skipped.length > 0 &&
+                  ` ${jobStatus.skipped.length} skipped.`}
+              </p>
+            )}
+
+            {jobId && jobStatus && jobStatus.status === "failed" && (
+              <p className="text-sm text-destructive">
+                Watermark generation failed: {jobStatus.error}
+              </p>
+            )}
+
             <div>
               <Label>Link untuk klien</Label>
               <div className="mt-2 flex gap-2">
